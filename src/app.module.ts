@@ -1,9 +1,9 @@
 import { MiddlewareConsumer, Module } from "@nestjs/common";
-import { AppController } from "./app.controller";
-import { AppService } from "./app.service";
 import { LoggerMiddleware } from "./common/middleware/logger.middleware";
 import { ConfigModule } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
+import { AuthModule } from "./module/auth/auth.module";
+import { User } from "./domain/user/user.entity";
 
 @Module({
   imports: [
@@ -17,14 +17,15 @@ import { TypeOrmModule } from "@nestjs/typeorm";
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
-      entities: [],
+      entities: [User],
       charset: 'utf8mb4',
       synchronize: true,
       logging: true,
     }),
+    AuthModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer): any {

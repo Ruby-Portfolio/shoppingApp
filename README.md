@@ -16,3 +16,7 @@
   - npm i passport
   - npm i @nestjs/passport
   - npm i passport-google-oauth20
+  - npm i passport-jwt
+  - npm i @nestjs/jwt
+  - npm i cookie-parser
+  - npm i @types/cookie-parser
