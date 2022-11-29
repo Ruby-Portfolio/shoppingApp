@@ -28,6 +28,6 @@ export class AuthController {
       maxAge: 1000 * 60 * 30,
     });
 
-    return res.redirect('/');
+    return res.end();
   }
 }
