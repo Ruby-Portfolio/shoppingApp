@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from '../user/user.entity';
+import { DateColumns } from '../embedded/dateColumns';
 
 @Entity()
 export class Market {
@@ -20,6 +21,9 @@ export class Market {
 
   @Column()
   userId: number;
+
+  @Column(() => DateColumns, { prefix: false })
+  dateColumns: DateColumns;
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'userId' })
