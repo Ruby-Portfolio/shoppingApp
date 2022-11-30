@@ -10,3 +10,14 @@ export class MarketInsertFailException extends HttpException {
 
   public static readonly ERROR_MESSAGE = '마켓 정보 등록에 실패하였습니다.';
 }
+
+export class MarketUpdateFailException extends HttpException {
+  constructor() {
+    super(
+      MarketInsertFailException.ERROR_MESSAGE,
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
+  }
+
+  public static readonly ERROR_MESSAGE = '마켓 정보 변경에 실패하였습니다.';
+}

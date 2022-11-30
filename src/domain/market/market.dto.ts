@@ -8,3 +8,11 @@ export class MarketCreate {
   @IsOptional()
   description: string;
 }
+
+export class MarketUpdate {
+  @Length(1, 20, { message: MarketErrorMessage.MARKET_NAME_LENGTH })
+  name: string;
+
+  @IsOptional()
+  description: string;
+}

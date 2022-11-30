@@ -1,9 +1,10 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { MarketService } from './market.service';
-import { MarketCreate } from './market.dto';
+import { MarketCreate, MarketUpdate } from './market.dto';
 import { User } from '../user/user.entity';
 import { CurrentUser } from '../../module/auth/auth.decorator';
 import { JwtGuard } from '../../module/auth/jwt/jwt.guard';
+import { IdPipe } from '../../common/validator/id.validator';
 
 @Controller('markets')
 export class MarketController {
@@ -16,5 +17,15 @@ export class MarketController {
     @CurrentUser() user: User,
   ): Promise<void> {
     await this.marketService.createMarket(marketCreate, user.id);
+  }
+
+  @Put(':marketId')
+  @UseGuards(JwtGuard)
+  async putMarket(
+    @Param('marketId', IdPipe) marketId: number,
+    @Body() marketUpdate: MarketUpdate,
+    @CurrentUser() user: User,
+  ): Promise<void> {
+    await this.marketService.updateMarket(marketId, marketUpdate, user.id);
   }
 }
