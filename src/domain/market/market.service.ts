@@ -43,4 +43,17 @@ export class MarketService {
       throw new MarketNotFoundException();
     }
   }
+
+  async deleteMarket(marketId: number, userId: number): Promise<void> {
+    const deleteResult = await this.marketRepository
+      .softDelete({
+        id: marketId,
+        userId,
+      })
+      .then((updateResult) => !!updateResult.affected);
+
+    if (!deleteResult) {
+      throw new MarketNotFoundException();
+    }
+  }
 }

@@ -28,4 +28,13 @@ export class MarketController {
   ): Promise<void> {
     await this.marketService.updateMarket(marketId, marketUpdate, user.id);
   }
+
+  @Put(':marketId')
+  @UseGuards(JwtGuard)
+  async deleteMarket(
+    @Param('marketId', IdPipe) marketId: number,
+    @CurrentUser() user: User,
+  ): Promise<void> {
+    await this.marketService.deleteMarket(marketId, user.id);
+  }
 }
