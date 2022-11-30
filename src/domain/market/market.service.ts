@@ -4,7 +4,7 @@ import { MarketRepository } from './market.repository';
 import { MarketCreate, MarketUpdate } from './market.dto';
 import {
   MarketInsertFailException,
-  MarketUpdateFailException,
+  MarketNotFoundException,
 } from './market.exception';
 
 @Injectable()
@@ -37,10 +37,10 @@ export class MarketService {
   ): Promise<void> {
     const updateResult = await this.marketRepository
       .update({ id: marketId }, { ...marketUpdate, userId })
-      .then((updateResult) => !!updateResult.raw.affectedRows);
+      .then((updateResult) => !!updateResult.affected);
 
     if (!updateResult) {
-      throw new MarketUpdateFailException();
+      throw new MarketNotFoundException();
     }
   }
 }
