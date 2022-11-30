@@ -1,4 +1,12 @@
-import { Body, Controller, Param, Post, Put, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Param,
+  Post,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { MarketService } from './market.service';
 import { MarketCreate, MarketUpdate } from './market.dto';
 import { User } from '../user/user.entity';
@@ -29,7 +37,7 @@ export class MarketController {
     await this.marketService.updateMarket(marketId, marketUpdate, user.id);
   }
 
-  @Put(':marketId')
+  @Delete(':marketId')
   @UseGuards(JwtGuard)
   async deleteMarket(
     @Param('marketId', IdPipe) marketId: number,
