@@ -1,9 +1,10 @@
-import { MiddlewareConsumer, Module } from "@nestjs/common";
-import { LoggerMiddleware } from "./common/middleware/logger.middleware";
-import { ConfigModule } from "@nestjs/config";
-import { TypeOrmModule } from "@nestjs/typeorm";
-import { AuthModule } from "./module/auth/auth.module";
-import { User } from "./domain/user/user.entity";
+import { MiddlewareConsumer, Module } from '@nestjs/common';
+import { LoggerMiddleware } from './common/middleware/logger.middleware';
+import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from './module/auth/auth.module';
+import { User } from './domain/user/user.entity';
+import { MarketModule } from './domain/market/market.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { User } from "./domain/user/user.entity";
       logging: true,
     }),
     AuthModule,
+    MarketModule,
   ],
   controllers: [],
   providers: [],

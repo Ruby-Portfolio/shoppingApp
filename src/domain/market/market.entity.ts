@@ -13,7 +13,7 @@ export class Market {
   id: number;
 
   @Column()
-  marketName: string;
+  name: string;
 
   @Column()
   description: string;
