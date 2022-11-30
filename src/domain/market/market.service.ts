@@ -20,7 +20,7 @@ export class MarketService {
         ...marketCreate,
         userId,
       })
-      .then((insertResult) => !!insertResult.raw.length);
+      .then((insertResult) => !!insertResult.raw.affectedRows);
 
     if (!insertResult) {
       throw new MarketInsertFailException();
