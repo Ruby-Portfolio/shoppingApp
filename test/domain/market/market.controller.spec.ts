@@ -14,6 +14,7 @@ import { Market } from '../../../src/domain/market/market.entity';
 import { JwtService } from '@nestjs/jwt';
 import { Payload } from '../../../src/module/auth/jwt/jwt.payload';
 import { MarketErrorMessage } from '../../../src/domain/market/market.message';
+import { MarketNotFoundException } from '../../../src/domain/market/market.exception';
 
 describe('MarketController (e2e)', () => {
   let app: INestApplication;
@@ -80,6 +81,10 @@ describe('MarketController (e2e)', () => {
   });
 
   describe('마켓 정보 등록', () => {
+    afterAll(async () => {
+      await marketRepository.delete({});
+    });
+
     describe('요청 실패', () => {
       test('인증되지 않은 사용자의 마켓 정보 등록시 401 응답', async () => {
         await request(app.getHttpServer())
@@ -126,6 +131,77 @@ describe('MarketController (e2e)', () => {
         expect(market.name).toEqual(marketCreate.name);
         expect(market.description).toEqual(marketCreate.description);
         expect(market.userId).toEqual(user.id);
+      });
+    });
+  });
+
+  describe('마켓 정보 수정', () => {
+    let market: Market;
+    beforeAll(async () => {
+      market = await marketRepository.save({
+        name: '루비 마켓',
+        description: '루비의 상점입니다.',
+        userId: user.id,
+      });
+    });
+
+    describe('요청 실패', () => {
+      test('인증되지 않은 사용자의 마켓 정보 등록시 401 응답', async () => {
+        await request(app.getHttpServer())
+          .put(`/api/markets/${market.id}`)
+          .send({
+            name: '루비 마트',
+            description: '루비의 마트입니다.',
+          })
+          .expect(HttpStatus.UNAUTHORIZED);
+      });
+
+      test('마켓 정보 등록시 필요한 값들이 형식에 맞지 않을 경우 400 응답', async () => {
+        const res = await request(app.getHttpServer())
+          .put(`/api/markets/${market.id}`)
+          .send({
+            name: '',
+            description: '루비의 마트입니다.',
+          })
+          .set('Cookie', [`Authentication=${token}`])
+          .expect(HttpStatus.BAD_REQUEST);
+
+        const errorMessages = res.body.message;
+        expect(errorMessages).toContain(MarketErrorMessage.MARKET_NAME_LENGTH);
+      });
+
+      test('등록되지 않은 마켓 정보 수정 요청시 404 응답', async () => {
+        const res = await request(app.getHttpServer())
+          .put(`/api/markets/${market.id + 999}`)
+          .send({
+            name: '루비 마트',
+            description: '루비의 마트입니다.',
+          })
+          .set('Cookie', [`Authentication=${token}`])
+          .expect(HttpStatus.NOT_FOUND);
+
+        const errorMessage = res.body.message;
+        expect(errorMessage).toEqual(MarketNotFoundException.ERROR_MESSAGE);
+      });
+    });
+
+    describe('요청 성공', () => {
+      test('마켓 정부 수정 성공시 200 응답', async () => {
+        const marketUpdate = {
+          name: '루비 마트',
+          description: '루비의 마트입니다.',
+        };
+
+        await request(app.getHttpServer())
+          .put(`/api/markets/${market.id}`)
+          .send(marketUpdate)
+          .set('Cookie', [`Authentication=${token}`])
+          .expect(HttpStatus.OK);
+
+        const updatedMarket = (await marketRepository.findBy({}))[0];
+        expect(updatedMarket.id).toEqual(market.id);
+        expect(updatedMarket.name).toEqual(marketUpdate.name);
+        expect(updatedMarket.description).toEqual(marketUpdate.description);
       });
     });
   });
