@@ -20,3 +20,6 @@
   - npm i @nestjs/jwt
   - npm i cookie-parser
   - npm i @types/cookie-parser
+- API 문서
+  - npm i @nestjs/swagger
+  - npm i swagger-ui-express
