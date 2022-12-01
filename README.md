@@ -8,6 +8,10 @@
   - npm install mysql2
   - npm i typeorm
   - npm i @nestjs/typeorm
+- cache
+  - npm i cache-manager
+  - npm i @types/cache-manager
+  - npm i cache-manager-ioredis
 - Validator
   - npm i class-validator
   - npm i @nestjs/class-validator
