@@ -27,7 +27,7 @@ export class ProductService {
 
     const insertResult = await this.productRepository
       .insert(productCreate)
-      .then((insertResult) => !!insertResult.raw.affectedRows);
+      .then((insertResult) => !!insertResult?.raw?.affectedRows);
 
     if (!insertResult) {
       throw new ProductInsertFailException();

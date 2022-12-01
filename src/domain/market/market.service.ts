@@ -33,7 +33,7 @@ export class MarketService {
   ): Promise<void> {
     const updateResult = await this.marketRepository
       .update({ id: marketId }, { ...marketUpdate, userId })
-      .then((updateResult) => !!updateResult.affected);
+      .then((updateResult) => !!updateResult?.affected);
 
     if (!updateResult) {
       throw new MarketNotFoundException();
@@ -46,7 +46,7 @@ export class MarketService {
         id: marketId,
         userId,
       })
-      .then((updateResult) => !!updateResult.affected);
+      .then((updateResult) => !!updateResult?.affected);
 
     if (!deleteResult) {
       throw new MarketNotFoundException();
