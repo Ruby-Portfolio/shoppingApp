@@ -11,8 +11,8 @@ export class ProductCreate {
   @Min(1, { message: ProductErrorMessage.PRICE_POSITIVE })
   price: number;
 
-  @IsInt({ message: ProductErrorMessage.PRICE_POSITIVE })
-  @Min(1, { message: ProductErrorMessage.PRICE_POSITIVE })
+  @IsInt({ message: ProductErrorMessage.STOCK_POSITIVE })
+  @Min(1, { message: ProductErrorMessage.STOCK_POSITIVE })
   stock: number;
 
   @IsOptional()

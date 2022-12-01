@@ -5,7 +5,7 @@ import { CurrentUser } from '../../module/auth/auth.decorator';
 import { User } from '../user/user.entity';
 import { ProductCreate } from './product.dto';
 
-@Controller('product')
+@Controller('products')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
