@@ -12,7 +12,7 @@ import { MarketCreate, MarketUpdate } from './market.dto';
 import { User } from '../user/user.entity';
 import { CurrentUser } from '../../module/auth/auth.decorator';
 import { JwtGuard } from '../../module/auth/jwt/jwt.guard';
-import { IdPipe } from '../../common/validator/id.validator';
+import { IdPipe } from '../../common/pipe/id.pipe';
 
 @Controller('markets')
 export class MarketController {

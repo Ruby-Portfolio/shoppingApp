@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { UserRepository } from '../user/user.repository';
 import { MarketRepository } from './market.repository';
 import { MarketCreate, MarketUpdate } from './market.dto';
 import {
@@ -9,10 +8,7 @@ import {
 
 @Injectable()
 export class MarketService {
-  constructor(
-    private readonly userRepository: UserRepository,
-    private readonly marketRepository: MarketRepository,
-  ) {}
+  constructor(private readonly marketRepository: MarketRepository) {}
 
   async createMarket(
     marketCreate: MarketCreate,

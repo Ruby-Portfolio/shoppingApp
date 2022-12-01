@@ -1,4 +1,9 @@
-import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
+import {
+  CacheModule,
+  HttpStatus,
+  INestApplication,
+  ValidationPipe,
+} from '@nestjs/common';
 import { User } from '../../../src/domain/user/user.entity';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
@@ -15,6 +20,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Payload } from '../../../src/module/auth/jwt/jwt.payload';
 import { MarketErrorMessage } from '../../../src/domain/market/market.message';
 import { MarketNotFoundException } from '../../../src/domain/market/market.exception';
+import * as redisStore from 'cache-manager-ioredis';
 
 describe('MarketController (e2e)', () => {
   let app: INestApplication;
@@ -39,6 +45,13 @@ describe('MarketController (e2e)', () => {
           charset: 'utf8mb4',
           synchronize: true,
           logging: true,
+        }),
+        CacheModule.register({
+          store: redisStore,
+          host: process.env.REDIS_HOST,
+          port: process.env.REDIS_PORT,
+          ttl: +process.env.REDIS_TTL,
+          isGlobal: true,
         }),
         AuthModule,
         MarketModule,
@@ -107,7 +120,7 @@ describe('MarketController (e2e)', () => {
           .expect(HttpStatus.BAD_REQUEST);
 
         const errorMessages = res.body.message;
-        expect(errorMessages).toContain(MarketErrorMessage.MARKET_NAME_LENGTH);
+        expect(errorMessages).toContain(MarketErrorMessage.NAME_LENGTH);
       });
     });
 
@@ -171,7 +184,7 @@ describe('MarketController (e2e)', () => {
           .expect(HttpStatus.BAD_REQUEST);
 
         const errorMessages = res.body.message;
-        expect(errorMessages).toContain(MarketErrorMessage.MARKET_NAME_LENGTH);
+        expect(errorMessages).toContain(MarketErrorMessage.NAME_LENGTH);
       });
 
       test('등록되지 않은 마켓 정보 수정 요청시 404 응답', async () => {
