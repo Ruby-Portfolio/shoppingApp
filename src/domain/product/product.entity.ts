@@ -23,6 +23,9 @@ export class Product {
   stock: number;
 
   @Column()
+  description: string;
+
+  @Column()
   marketId: number;
 
   @Column(() => DateColumns, { prefix: false })
