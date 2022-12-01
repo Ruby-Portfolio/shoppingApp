@@ -16,7 +16,7 @@ export class MarketCache {
 
     if (!market) {
       market = await this.marketRepository.findOneBy({ id: marketId, userId });
-      await this.cacheManager.set(marketKey, market);
+      market && (await this.cacheManager.set(marketKey, market));
     }
 
     return market;
