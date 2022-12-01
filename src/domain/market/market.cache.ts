@@ -12,11 +12,13 @@ export class MarketCache {
 
   async getMarketCache(marketId: number, userId: number): Promise<Market> {
     const marketKey = `market_${marketId}_${userId}`;
-    return (await this.cacheManager
-      .get(marketKey)
-      .then(
-        (market) =>
-          market || this.marketRepository.findOneBy({ id: marketId, userId }),
-      )) as Market;
+    let market = (await this.cacheManager.get(marketKey)) as Market;
+
+    if (!market) {
+      market = await this.marketRepository.findOneBy({ id: marketId, userId });
+      await this.cacheManager.set(marketKey, market);
+    }
+
+    return market;
   }
 }
