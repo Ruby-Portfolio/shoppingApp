@@ -1,4 +1,5 @@
 import {
+  CACHE_MANAGER,
   CacheModule,
   HttpStatus,
   INestApplication,
@@ -21,10 +22,12 @@ import { Payload } from '../../../src/module/auth/jwt/jwt.payload';
 import { MarketErrorMessage } from '../../../src/domain/market/market.message';
 import { MarketNotFoundException } from '../../../src/domain/market/market.exception';
 import * as redisStore from 'cache-manager-ioredis';
+import { Cache } from 'cache-manager';
 
 describe('MarketController (e2e)', () => {
   let app: INestApplication;
   let marketRepository: MarketRepository;
+  let cacheManager: Cache;
   let user: User;
   let token: string;
 
@@ -81,6 +84,8 @@ describe('MarketController (e2e)', () => {
 
     const userRepository = module.get<UserRepository>(UserRepository);
     marketRepository = module.get<MarketRepository>(MarketRepository);
+    cacheManager = module.get(CACHE_MANAGER);
+
     await marketRepository.delete({});
     await userRepository.delete({});
     user = await userRepository.save({
@@ -150,12 +155,16 @@ describe('MarketController (e2e)', () => {
 
   describe('마켓 정보 수정', () => {
     let market: Market;
+    let marketCacheKey: string;
     beforeAll(async () => {
       market = await marketRepository.save({
         name: '루비 마켓',
         description: '루비의 상점입니다.',
         userId: user.id,
       });
+
+      marketCacheKey = `market_${market.id}_${user.id}`;
+      await cacheManager.set(marketCacheKey, market);
     });
 
     afterAll(async () => {
@@ -171,6 +180,9 @@ describe('MarketController (e2e)', () => {
             description: '루비의 마트입니다.',
           })
           .expect(HttpStatus.UNAUTHORIZED);
+
+        const cacheMarket = await cacheManager.get(marketCacheKey);
+        expect(cacheMarket).toBeTruthy();
       });
 
       test('마켓 정보 수정시 필요한 값들이 형식에 맞지 않을 경우 400 응답', async () => {
@@ -184,7 +196,9 @@ describe('MarketController (e2e)', () => {
           .expect(HttpStatus.BAD_REQUEST);
 
         const errorMessages = res.body.message;
+        const cacheMarket = await cacheManager.get(marketCacheKey);
         expect(errorMessages).toContain(MarketErrorMessage.NAME_LENGTH);
+        expect(cacheMarket).toBeTruthy();
       });
 
       test('등록되지 않은 마켓 정보 수정 요청시 404 응답', async () => {
@@ -198,7 +212,9 @@ describe('MarketController (e2e)', () => {
           .expect(HttpStatus.NOT_FOUND);
 
         const errorMessage = res.body.message;
+        const cacheMarket = await cacheManager.get(marketCacheKey);
         expect(errorMessage).toEqual(MarketNotFoundException.ERROR_MESSAGE);
+        expect(cacheMarket).toBeTruthy();
       });
     });
 
@@ -216,21 +232,27 @@ describe('MarketController (e2e)', () => {
           .expect(HttpStatus.OK);
 
         const updatedMarket = (await marketRepository.findBy({}))[0];
+        const cacheMarket = await cacheManager.get(marketCacheKey);
         expect(updatedMarket.id).toEqual(market.id);
         expect(updatedMarket.name).toEqual(marketUpdate.name);
         expect(updatedMarket.description).toEqual(marketUpdate.description);
+        expect(cacheMarket).toBeNull();
       });
     });
   });
 
   describe('마켓 정보 삭제', () => {
     let market: Market;
+    let marketCacheKey: string;
     beforeAll(async () => {
       market = await marketRepository.save({
         name: '루비 마켓',
         description: '루비의 상점입니다.',
         userId: user.id,
       });
+
+      marketCacheKey = `market_${market.id}_${user.id}`;
+      await cacheManager.set(marketCacheKey, market);
     });
 
     afterAll(async () => {
@@ -242,6 +264,9 @@ describe('MarketController (e2e)', () => {
         await request(app.getHttpServer())
           .delete(`/api/markets/${market.id}`)
           .expect(HttpStatus.UNAUTHORIZED);
+
+        const cacheMarket = await cacheManager.get(marketCacheKey);
+        expect(cacheMarket).toBeTruthy();
       });
 
       test('등록되지 않은 마켓 정보 삭제 요청시 404 응답', async () => {
@@ -251,7 +276,9 @@ describe('MarketController (e2e)', () => {
           .expect(HttpStatus.NOT_FOUND);
 
         const errorMessage = res.body.message;
+        const cacheMarket = await cacheManager.get(marketCacheKey);
         expect(errorMessage).toEqual(MarketNotFoundException.ERROR_MESSAGE);
+        expect(cacheMarket).toBeTruthy();
       });
     });
     describe('요청 성공', () => {
@@ -262,7 +289,9 @@ describe('MarketController (e2e)', () => {
           .expect(HttpStatus.OK);
 
         const marketCount = await marketRepository.count();
+        const cacheMarket = await cacheManager.get(marketCacheKey);
         expect(marketCount).toEqual(0);
+        expect(cacheMarket).toBeNull();
       });
     });
   });
