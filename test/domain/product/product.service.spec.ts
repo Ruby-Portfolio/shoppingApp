@@ -9,7 +9,10 @@ import { ProductRepository } from '../../../src/domain/product/product.repositor
 import { ProductService } from '../../../src/domain/product/product.service';
 import { ProductDto } from '../../../src/domain/product/product.dto';
 import { MarketNotFoundException } from '../../../src/domain/market/market.exception';
-import { ProductInsertFailException } from '../../../src/domain/product/product.exception';
+import {
+  ProductInsertFailException,
+  ProductNotFoundException,
+} from '../../../src/domain/product/product.exception';
 import { InsertResult } from 'typeorm';
 
 describe('ProductService', () => {
@@ -54,7 +57,7 @@ describe('ProductService', () => {
         ).rejects.toEqual(new MarketNotFoundException());
       });
 
-      test('마켓 정보를 DB 에 저장 중 오류 발생시 예외 처리', async () => {
+      test('상품 정보를 DB 에 저장 중 오류 발생시 예외 처리', async () => {
         jest
           .spyOn(marketCache, 'getMarketCache')
           .mockResolvedValue(new Market());
@@ -68,7 +71,7 @@ describe('ProductService', () => {
     });
 
     describe('저장 성공', () => {
-      test('마켓 정보 저장 성공', async () => {
+      test('상품 정보 저장 성공', async () => {
         jest
           .spyOn(marketCache, 'getMarketCache')
           .mockResolvedValue(new Market());
@@ -79,6 +82,75 @@ describe('ProductService', () => {
 
         await expect(
           productService.createProduct({} as ProductDto, 10),
+        ).resolves.toEqual(undefined);
+      });
+    });
+  });
+
+  describe('updateProduct - 상품 정보 수정', () => {
+    describe('수정 실패', () => {
+      test('유저 id 와 마켓 id 에 해당하는 마켓 정보가 없을 경우 예외 처리', async () => {
+        const userId = 123;
+        const marketId = 123;
+        const productId = 123;
+        const productDto: ProductDto = {
+          name: '플루트',
+          price: 10000000,
+          stock: 10,
+          description: '관악기',
+          marketId: marketId,
+        };
+
+        jest.spyOn(marketCache, 'getMarketCache').mockResolvedValue(null);
+
+        await expect(
+          productService.updateProduct(productId, productDto, userId),
+        ).rejects.toEqual(new MarketNotFoundException());
+      });
+
+      test('마켓 id 와 상품 id 에 해당하는 상품 정보가 없을 경우 예외 처리', async () => {
+        const userId = 123;
+        const marketId = 123;
+        const productId = 123;
+        const productDto: ProductDto = {
+          name: '플루트',
+          price: 10000000,
+          stock: 10,
+          description: '관악기',
+          marketId: marketId,
+        };
+
+        jest
+          .spyOn(marketCache, 'getMarketCache')
+          .mockResolvedValue(new Market());
+        jest.spyOn(productRepository, 'updateProduct').mockResolvedValue(false);
+
+        await expect(
+          productService.updateProduct(productId, productDto, userId),
+        ).rejects.toEqual(new ProductNotFoundException());
+      });
+    });
+
+    describe('수정 성공', () => {
+      test('상품 정보 저장 성공', async () => {
+        const userId = 123;
+        const marketId = 123;
+        const productId = 123;
+        const productDto: ProductDto = {
+          name: '플루트',
+          price: 10000000,
+          stock: 10,
+          description: '관악기',
+          marketId: marketId,
+        };
+
+        jest
+          .spyOn(marketCache, 'getMarketCache')
+          .mockResolvedValue(new Market());
+        jest.spyOn(productRepository, 'updateProduct').mockResolvedValue(true);
+
+        await expect(
+          productService.updateProduct(productId, productDto, userId),
         ).resolves.toEqual(undefined);
       });
     });

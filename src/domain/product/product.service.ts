@@ -40,7 +40,11 @@ export class ProductService {
     userId: number,
   ) {
     const marketId = productDto.marketId;
-    await this.marketCache.getMarketCache(marketId, userId);
+    const market = await this.marketCache.getMarketCache(marketId, userId);
+
+    if (!market) {
+      throw new MarketNotFoundException();
+    }
 
     const updateResult = await this.productRepository.updateProduct(
       productId,

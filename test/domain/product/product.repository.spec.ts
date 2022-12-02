@@ -74,6 +74,11 @@ describe('ProductRepository', () => {
         marketId: market.id,
       });
     });
+
+    afterAll(async () => {
+      await productRepository.delete({});
+    });
+
     describe('수정 실패', () => {
       test('마켓 id가 일치하지 않을 경우', async () => {
         const productDto: ProductDto = {
