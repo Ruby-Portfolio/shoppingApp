@@ -16,7 +16,7 @@ export class Market {
   @Column()
   name: string;
 
-  @Column()
+  @Column({ nullable: true })
   description: string;
 
   @Column()

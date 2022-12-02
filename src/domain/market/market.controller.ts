@@ -21,20 +21,20 @@ export class MarketController {
   @Post()
   @UseGuards(JwtGuard)
   async postMarket(
-    @Body() marketCreate: MarketDto,
+    @Body() marketDto: MarketDto,
     @CurrentUser() user: User,
   ): Promise<void> {
-    await this.marketService.createMarket(marketCreate, user.id);
+    await this.marketService.createMarket(marketDto, user.id);
   }
 
   @Put(':marketId')
   @UseGuards(JwtGuard)
   async putMarket(
     @Param('marketId', IdPipe) marketId: number,
-    @Body() marketUpdate: MarketDto,
+    @Body() marketDto: MarketDto,
     @CurrentUser() user: User,
   ): Promise<void> {
-    await this.marketService.updateMarket(marketId, marketUpdate, user.id);
+    await this.marketService.updateMarket(marketId, marketDto, user.id);
   }
 
   @Delete(':marketId')

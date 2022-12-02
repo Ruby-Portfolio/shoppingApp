@@ -10,10 +10,10 @@ import {
 export class MarketService {
   constructor(private readonly marketRepository: MarketRepository) {}
 
-  async createMarket(marketCreate: MarketDto, userId: number): Promise<void> {
+  async createMarket(marketDto: MarketDto, userId: number): Promise<void> {
     const insertResult = await this.marketRepository
       .insert({
-        ...marketCreate,
+        ...marketDto,
         userId,
       })
       .then((insertResult) => !!insertResult.raw.affectedRows);
@@ -25,11 +25,11 @@ export class MarketService {
 
   async updateMarket(
     marketId: number,
-    marketUpdate: MarketDto,
+    marketDto: MarketDto,
     userId: number,
   ): Promise<void> {
     const updateResult = await this.marketRepository
-      .update({ id: marketId }, { ...marketUpdate, userId })
+      .update({ id: marketId }, { ...marketDto, userId })
       .then((updateResult) => !!updateResult?.affected);
 
     if (!updateResult) {

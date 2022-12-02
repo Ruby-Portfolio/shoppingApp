@@ -19,5 +19,5 @@ export class ProductDto {
   description?: string;
 
   @IsId({ message: MarketErrorMessage.ID_POSITIVE })
-  marketId: number;
+  marketId?: number;
 }

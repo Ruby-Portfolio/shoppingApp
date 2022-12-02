@@ -3,7 +3,10 @@ import { MarketRepository } from '../market/market.repository';
 import { ProductRepository } from './product.repository';
 import { ProductDto } from './product.dto';
 import { MarketCache } from '../market/market.cache';
-import { ProductInsertFailException } from './product.exception';
+import {
+  ProductInsertFailException,
+  ProductNotFoundException,
+} from './product.exception';
 import { MarketNotFoundException } from '../market/market.exception';
 
 @Injectable()
@@ -14,11 +17,8 @@ export class ProductService {
     private readonly marketCache: MarketCache,
   ) {}
 
-  async createProduct(
-    productCreate: ProductDto,
-    userId: number,
-  ): Promise<void> {
-    const marketId = productCreate.marketId;
+  async createProduct(productDto: ProductDto, userId: number): Promise<void> {
+    const marketId = productDto.marketId;
     const market = await this.marketCache.getMarketCache(marketId, userId);
 
     if (!market) {
@@ -26,7 +26,7 @@ export class ProductService {
     }
 
     const insertResult = await this.productRepository
-      .insert(productCreate)
+      .insert(productDto)
       .then((insertResult) => !!insertResult?.raw?.affectedRows);
 
     if (!insertResult) {
@@ -34,5 +34,21 @@ export class ProductService {
     }
   }
 
-  // async updateProduct(productUpdate: ProductUpdate, userId: number);
+  async updateProduct(
+    productId: number,
+    productDto: ProductDto,
+    userId: number,
+  ) {
+    const marketId = productDto.marketId;
+    await this.marketCache.getMarketCache(marketId, userId);
+
+    const updateResult = await this.productRepository.updateProduct(
+      productId,
+      productDto,
+    );
+
+    if (!updateResult) {
+      throw new ProductNotFoundException();
+    }
+  }
 }
