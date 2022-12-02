@@ -55,4 +55,23 @@ export class ProductService {
       throw new ProductNotFoundException();
     }
   }
+
+  async deleteProduct(productId: number, marketId: number, userId: number) {
+    const market = await this.marketCache.getMarketCache(marketId, userId);
+
+    if (!market) {
+      throw new MarketNotFoundException();
+    }
+
+    const deleteResult = await this.productRepository
+      .softDelete({
+        id: productId,
+        marketId,
+      })
+      .then((updateResult) => !!updateResult.affected);
+
+    if (!deleteResult) {
+      throw new ProductNotFoundException();
+    }
+  }
 }
