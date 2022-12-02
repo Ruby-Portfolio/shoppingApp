@@ -5,10 +5,14 @@ import {
   MarketInsertFailException,
   MarketNotFoundException,
 } from './market.exception';
+import { MarketCache } from './market.cache';
 
 @Injectable()
 export class MarketService {
-  constructor(private readonly marketRepository: MarketRepository) {}
+  constructor(
+    private readonly marketRepository: MarketRepository,
+    private readonly marketCache: MarketCache,
+  ) {}
 
   async createMarket(marketDto: MarketDto, userId: number): Promise<void> {
     const insertResult = await this.marketRepository
@@ -35,6 +39,8 @@ export class MarketService {
     if (!updateResult) {
       throw new MarketNotFoundException();
     }
+
+    await this.marketCache.deleteMarketCache(marketId, userId);
   }
 
   async deleteMarket(marketId: number, userId: number): Promise<void> {
@@ -48,5 +54,7 @@ export class MarketService {
     if (!deleteResult) {
       throw new MarketNotFoundException();
     }
+
+    await this.marketCache.deleteMarketCache(marketId, userId);
   }
 }
