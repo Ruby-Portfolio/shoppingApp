@@ -112,4 +112,30 @@ describe('MarketCache', () => {
       });
     });
   });
+
+  describe('deleteMarketCache - 캐시된 마켓 정보 삭제', () => {
+    let marketCacheKey;
+    beforeAll(async () => {
+      marketCacheKey = `market_${market.id}_${user.id}`;
+      await cacheManager.reset();
+      await cacheManager.set(marketCacheKey, market);
+    });
+
+    test('일치하지 않는 마켓 id와 유저 id 로 마켓 정보 삭제시 캐시 삭제되지 않음', async () => {
+      await marketCache.deleteMarketCache(market.id + 999, user.id + 999);
+      const findMarket: Market = await cacheManager.get(marketCacheKey);
+
+      expect(findMarket.id).toEqual(market.id);
+      expect(findMarket.name).toEqual(market.name);
+      expect(findMarket.description).toEqual(market.description);
+      expect(findMarket.userId).toEqual(market.userId);
+    });
+
+    test('캐시된 마켓 정보 삭제', async () => {
+      await marketCache.deleteMarketCache(market.id, user.id);
+      const findMarket = await cacheManager.get(marketCacheKey);
+
+      expect(findMarket).toBeNull();
+    });
+  });
 });
