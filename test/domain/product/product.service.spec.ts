@@ -13,7 +13,7 @@ import {
   ProductInsertFailException,
   ProductNotFoundException,
 } from '../../../src/domain/product/product.exception';
-import { InsertResult } from 'typeorm';
+import { InsertResult, UpdateResult } from 'typeorm';
 
 describe('ProductService', () => {
   let productRepository: ProductRepository;
@@ -151,6 +151,58 @@ describe('ProductService', () => {
 
         await expect(
           productService.updateProduct(productId, productDto, userId),
+        ).resolves.toEqual(undefined);
+      });
+    });
+  });
+
+  describe('deleteProduct - 상품 정보 삭제', () => {
+    describe('삭제 실패', () => {
+      test('유저 id 와 마켓 id 에 해당하는 마켓 정보가 없을 경우 예외 처리', async () => {
+        const userId = 123;
+        const marketId = 123;
+        const productId = 123;
+
+        jest.spyOn(marketCache, 'getMarketCache').mockResolvedValue(null);
+
+        await expect(
+          productService.deleteProduct(productId, marketId, userId),
+        ).rejects.toEqual(new MarketNotFoundException());
+      });
+
+      test('마켓 id 와 상품 id 에 해당하는 상품 정보가 없을 경우 예외 처리', async () => {
+        const userId = 123;
+        const marketId = 123;
+        const productId = 123;
+
+        jest
+          .spyOn(marketCache, 'getMarketCache')
+          .mockResolvedValue(new Market());
+        jest
+          .spyOn(productRepository, 'softDelete')
+          .mockResolvedValue({ affected: 0 } as UpdateResult);
+
+        await expect(
+          productService.deleteProduct(productId, marketId, userId),
+        ).rejects.toEqual(new ProductNotFoundException());
+      });
+    });
+
+    describe('삭제 성공', () => {
+      test('상품 정보 삭제 성공', async () => {
+        const userId = 123;
+        const marketId = 123;
+        const productId = 123;
+
+        jest
+          .spyOn(marketCache, 'getMarketCache')
+          .mockResolvedValue(new Market());
+        jest
+          .spyOn(productRepository, 'softDelete')
+          .mockResolvedValue({ affected: 1 } as UpdateResult);
+
+        await expect(
+          productService.deleteProduct(productId, marketId, userId),
         ).resolves.toEqual(undefined);
       });
     });
