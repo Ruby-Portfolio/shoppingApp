@@ -8,6 +8,7 @@ import {
   ProductNotFoundException,
 } from './product.exception';
 import { MarketNotFoundException } from '../market/market.exception';
+import { Product } from './product.entity';
 
 @Injectable()
 export class ProductService {
@@ -46,10 +47,12 @@ export class ProductService {
       throw new MarketNotFoundException();
     }
 
-    const updateResult = await this.productRepository.updateProduct(
-      productId,
-      productDto,
-    );
+    const updateResult = await this.productRepository
+      .update({ id: productId, marketId }, {
+        ...productDto,
+        marketId,
+      } as Product)
+      .then((updateResult) => !!updateResult?.affected);
 
     if (!updateResult) {
       throw new ProductNotFoundException();

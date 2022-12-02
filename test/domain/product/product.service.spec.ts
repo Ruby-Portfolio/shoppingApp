@@ -123,7 +123,9 @@ describe('ProductService', () => {
         jest
           .spyOn(marketCache, 'getMarketCache')
           .mockResolvedValue(new Market());
-        jest.spyOn(productRepository, 'updateProduct').mockResolvedValue(false);
+        jest
+          .spyOn(productRepository, 'update')
+          .mockResolvedValue({ affected: 0 } as UpdateResult);
 
         await expect(
           productService.updateProduct(productId, productDto, userId),
@@ -147,7 +149,9 @@ describe('ProductService', () => {
         jest
           .spyOn(marketCache, 'getMarketCache')
           .mockResolvedValue(new Market());
-        jest.spyOn(productRepository, 'updateProduct').mockResolvedValue(true);
+        jest
+          .spyOn(productRepository, 'update')
+          .mockResolvedValue({ affected: 1 } as UpdateResult);
 
         await expect(
           productService.updateProduct(productId, productDto, userId),
