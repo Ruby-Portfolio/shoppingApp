@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   Param,
   Post,
   Put,
@@ -11,12 +12,16 @@ import { ProductService } from './product.service';
 import { JwtGuard } from '../../module/auth/jwt/jwt.guard';
 import { CurrentUser } from '../../module/auth/auth.decorator';
 import { User } from '../user/user.entity';
-import { ProductDeleteDto, ProductDto } from './product.dto';
+import { ProductDeleteDto, ProductDetailDto, ProductDto } from './product.dto';
 import { IdPipe } from '../../common/pipe/id.pipe';
+import { ProductCache } from './product.cache';
 
 @Controller('products')
 export class ProductController {
-  constructor(private readonly productService: ProductService) {}
+  constructor(
+    private readonly productService: ProductService,
+    private readonly productCache: ProductCache,
+  ) {}
 
   @Post()
   @UseGuards(JwtGuard)
@@ -25,6 +30,13 @@ export class ProductController {
     @CurrentUser() user: User,
   ): Promise<void> {
     await this.productService.createProduct(productDto, user.id);
+  }
+
+  @Get(':productId')
+  async getProductDetail(
+    @Param('productId', IdPipe) productId: number,
+  ): Promise<ProductDetailDto> {
+    return this.productCache.getProductDetailCache(productId);
   }
 
   @Put(':productId')

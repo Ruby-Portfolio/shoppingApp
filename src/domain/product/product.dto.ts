@@ -26,3 +26,13 @@ export class ProductDeleteDto {
   @IsId({ message: MarketErrorMessage.ID_POSITIVE })
   marketId: number;
 }
+
+export class ProductDetailDto {
+  id: number;
+  name: string;
+  price: number;
+  stock: number;
+  description?: string;
+  marketName: string;
+  userName: string;
+}
