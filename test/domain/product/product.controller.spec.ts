@@ -25,6 +25,7 @@ import { ProductModule } from '../../../src/domain/product/product.module';
 import { ProductRepository } from '../../../src/domain/product/product.repository';
 import { Product } from '../../../src/domain/product/product.entity';
 import { ProductErrorMessage } from '../../../src/domain/product/product.message';
+import { ProductNotFoundException } from '../../../src/domain/product/product.exception';
 
 describe('ProductController (e2e)', () => {
   let app: INestApplication;
@@ -136,7 +137,7 @@ describe('ProductController (e2e)', () => {
           .send({
             name: '',
             price: -10,
-            stock: 0,
+            stock: -1,
             description: '보석',
             marketId: 0,
           })
@@ -150,7 +151,7 @@ describe('ProductController (e2e)', () => {
         expect(errorMessages).toContain(MarketErrorMessage.ID_POSITIVE);
       });
 
-      test('존재하지 않는 마켓에 상품 정보 등록시 필요한 값들이 형식에 맞지 않을 경우 404 응답', async () => {
+      test('존재하지 않는 마켓에 상품 정보 등록시 404 응답', async () => {
         const res = await request(app.getHttpServer())
           .post('/api/products')
           .send({
@@ -190,6 +191,120 @@ describe('ProductController (e2e)', () => {
         expect(product.stock).toEqual(productCreate.stock);
         expect(product.description).toEqual(productCreate.description);
         expect(product.marketId).toEqual(productCreate.marketId);
+      });
+    });
+  });
+
+  describe('상품 정보 수정', () => {
+    let product: Product;
+    beforeAll(async () => {
+      product = await productRepository.save({
+        name: '루비',
+        price: 10000000,
+        stock: 10,
+        description: '보석',
+        marketId: market.id,
+      });
+    });
+
+    afterAll(async () => {
+      await productRepository.delete({});
+    });
+
+    describe('요청 실패', () => {
+      test('인증되지 않은 사용자의 마켓 정보 등록시 401 응답', async () => {
+        await request(app.getHttpServer())
+          .put(`/api/products/${product.id}`)
+          .send({
+            name: '고급 루비',
+            price: 100000000,
+            stock: 5,
+            description: '고급 보석',
+            marketId: market.id,
+          })
+          .expect(HttpStatus.UNAUTHORIZED);
+      });
+
+      test('상품 수정시 필요한 값들이 형식에 맞지 않을 경우 400 응답', async () => {
+        const res = await request(app.getHttpServer())
+          .put(`/api/products/${product.id}`)
+          .send({
+            name: '',
+            price: -10,
+            stock: -1,
+            description: '고급 보석',
+            marketId: -1,
+          })
+          .set('Cookie', [`Authentication=${token}`])
+          .expect(HttpStatus.BAD_REQUEST);
+
+        const errorMessages = res.body.message;
+        expect(errorMessages).toContain(ProductErrorMessage.NAME_LENGTH);
+        expect(errorMessages).toContain(ProductErrorMessage.PRICE_POSITIVE);
+        expect(errorMessages).toContain(ProductErrorMessage.STOCK_POSITIVE);
+        expect(errorMessages).toContain(MarketErrorMessage.ID_POSITIVE);
+      });
+
+      test('마켓 id가 상품에 등록된 마켓 id 와 일치하지 않을 경우 404 응답', async () => {
+        const res = await request(app.getHttpServer())
+          .put(`/api/products/${product.id}`)
+          .send({
+            name: '고급 루비',
+            price: 100000000,
+            stock: 5,
+            description: '고급 보석',
+            marketId: market.id + 999,
+          })
+          .set('Cookie', [`Authentication=${token}`])
+          .expect(HttpStatus.NOT_FOUND);
+
+        const errorMessages = res.body.message;
+        expect(errorMessages).toEqual(MarketNotFoundException.ERROR_MESSAGE);
+      });
+
+      test('상품 id가 일치하지 않을 경우 404 응답', async () => {
+        const res = await request(app.getHttpServer())
+          .put(`/api/products/${product.id + 999}`)
+          .send({
+            name: '고급 루비',
+            price: 100000000,
+            stock: 5,
+            description: '고급 보석',
+            marketId: market.id,
+          })
+          .set('Cookie', [`Authentication=${token}`])
+          .expect(HttpStatus.NOT_FOUND);
+
+        const errorMessages = res.body.message;
+        expect(errorMessages).toEqual(ProductNotFoundException.ERROR_MESSAGE);
+      });
+    });
+
+    describe('요청 성공', () => {
+      test('상품 정보 수정 성공', async () => {
+        const productDto = {
+          name: '고급 루비',
+          price: 100000000,
+          stock: 5,
+          description: '고급 보석',
+          marketId: market.id,
+        };
+
+        await request(app.getHttpServer())
+          .put(`/api/products/${product.id}`)
+          .send(productDto)
+          .set('Cookie', [`Authentication=${token}`])
+          .expect(HttpStatus.OK);
+
+        const updatedProduct = await productRepository.findOneBy({
+          id: product.id,
+        });
+
+        expect(updatedProduct.id).toEqual(product.id);
+        expect(updatedProduct.name).toEqual(productDto.name);
+        expect(updatedProduct.price).toEqual(productDto.price);
+        expect(updatedProduct.stock).toEqual(productDto.stock);
+        expect(updatedProduct.description).toEqual(productDto.description);
       });
     });
   });

@@ -12,7 +12,7 @@ export class ProductDto {
   price: number;
 
   @IsInt({ message: ProductErrorMessage.STOCK_POSITIVE })
-  @Min(1, { message: ProductErrorMessage.STOCK_POSITIVE })
+  @Min(0, { message: ProductErrorMessage.STOCK_POSITIVE })
   stock: number;
 
   @IsOptional()
