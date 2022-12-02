@@ -10,8 +10,12 @@ export class MarketCache {
     private readonly marketRepository: MarketRepository,
   ) {}
 
+  getMarketCacheKey(marketId: number, userId: number): string {
+    return `market_${marketId}_${userId}`;
+  }
+
   async getMarketCache(marketId: number, userId: number): Promise<Market> {
-    const marketKey = `market_${marketId}_${userId}`;
+    const marketKey = this.getMarketCacheKey(marketId, userId);
     let market = (await this.cacheManager.get(marketKey)) as Market;
 
     if (!market) {
@@ -20,5 +24,10 @@ export class MarketCache {
     }
 
     return market;
+  }
+
+  async deleteMarketCache(marketId: number, userId: number) {
+    const marketKey = this.getMarketCacheKey(marketId, userId);
+    await this.cacheManager.del(marketKey);
   }
 }
