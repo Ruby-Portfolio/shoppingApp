@@ -26,7 +26,7 @@ export class MarketCache {
     return market;
   }
 
-  async deleteMarketCache(marketId: number, userId: number) {
+  async deleteMarketCache(marketId: number, userId: number): Promise<void> {
     const marketKey = this.getMarketCacheKey(marketId, userId);
     await this.cacheManager.del(marketKey);
   }

@@ -9,6 +9,7 @@ import {
 } from './product.exception';
 import { MarketNotFoundException } from '../market/market.exception';
 import { Product } from './product.entity';
+import { ProductCache } from './product.cache';
 
 @Injectable()
 export class ProductService {
@@ -16,6 +17,7 @@ export class ProductService {
     private readonly productRepository: ProductRepository,
     private readonly marketRepository: MarketRepository,
     private readonly marketCache: MarketCache,
+    private readonly productCache: ProductCache,
   ) {}
 
   async createProduct(productDto: ProductDto, userId: number): Promise<void> {
@@ -57,6 +59,8 @@ export class ProductService {
     if (!updateResult) {
       throw new ProductNotFoundException();
     }
+
+    await this.productCache.deleteProductDetailCache(productId);
   }
 
   async deleteProduct(productId: number, marketId: number, userId: number) {
@@ -76,5 +80,7 @@ export class ProductService {
     if (!deleteResult) {
       throw new ProductNotFoundException();
     }
+
+    await this.productCache.deleteProductDetailCache(productId);
   }
 }
