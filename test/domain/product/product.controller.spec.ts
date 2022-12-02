@@ -29,6 +29,7 @@ import { ProductNotFoundException } from '../../../src/domain/product/product.ex
 
 describe('ProductController (e2e)', () => {
   let app: INestApplication;
+  let userRepository: UserRepository;
   let marketRepository: MarketRepository;
   let productRepository: ProductRepository;
   let user: User;
@@ -88,7 +89,7 @@ describe('ProductController (e2e)', () => {
     });
     await app.init();
 
-    const userRepository = module.get<UserRepository>(UserRepository);
+    userRepository = module.get<UserRepository>(UserRepository);
     marketRepository = module.get<MarketRepository>(MarketRepository);
     productRepository = module.get<ProductRepository>(ProductRepository);
     const jwtService = module.get<JwtService>(JwtService);
@@ -112,13 +113,19 @@ describe('ProductController (e2e)', () => {
     token = await jwtService.sign({ ...user } as Payload);
   });
 
+  afterAll(async () => {
+    await productRepository.delete({});
+    await marketRepository.delete({});
+    await userRepository.delete({});
+  });
+
   describe('상품 정보 등록', () => {
     afterAll(async () => {
       await productRepository.delete({});
     });
 
     describe('요청 실패', () => {
-      test('인증되지 않은 사용자의 마켓 정보 등록시 401 응답', async () => {
+      test('인증되지 않은 사용자의 상품 정보 등록시 401 응답', async () => {
         await request(app.getHttpServer())
           .post('/api/products')
           .send({
@@ -212,7 +219,7 @@ describe('ProductController (e2e)', () => {
     });
 
     describe('요청 실패', () => {
-      test('인증되지 않은 사용자의 마켓 정보 등록시 401 응답', async () => {
+      test('인증되지 않은 사용자의 상품 정보 수정시 401 응답', async () => {
         await request(app.getHttpServer())
           .put(`/api/products/${product.id}`)
           .send({
@@ -326,7 +333,7 @@ describe('ProductController (e2e)', () => {
     });
 
     describe('요청 실패', () => {
-      test('인증되지 않은 사용자의 마켓 정보 등록시 401 응답', async () => {
+      test('인증되지 않은 사용자의 상품 정보 삭제 요청시 401 응답', async () => {
         await request(app.getHttpServer())
           .delete(`/api/products/${product.id}`)
           .send({
@@ -387,6 +394,49 @@ describe('ProductController (e2e)', () => {
 
         const count = await productRepository.count();
         expect(count).toEqual(0);
+      });
+    });
+  });
+
+  describe('상품 상세 정보 조회', () => {
+    let product: Product;
+    beforeAll(async () => {
+      product = await productRepository.save({
+        name: '루비',
+        price: 10000000,
+        stock: 10,
+        description: '보석',
+        marketId: market.id,
+      });
+    });
+
+    afterAll(async () => {
+      await productRepository.delete({});
+    });
+
+    describe('요청 실패', () => {
+      test('존재하지 않는 상품 상세 정보 조회 요청시 404 응답', async () => {
+        await request(app.getHttpServer())
+          .get(`/api/products/${product.id + 999}`)
+          .expect(HttpStatus.NOT_FOUND);
+      });
+    });
+
+    describe('요청 성공', () => {
+      test('상품 상세 정보 조회', async () => {
+        const res = await request(app.getHttpServer())
+          .get(`/api/products/${product.id}`)
+          .expect(HttpStatus.OK);
+
+        const productDetail = res.body;
+
+        expect(productDetail.id).toEqual(product.id);
+        expect(productDetail.name).toEqual(product.name);
+        expect(productDetail.price).toEqual(product.price);
+        expect(productDetail.stock).toEqual(product.stock);
+        expect(productDetail.description).toEqual(product.description);
+        expect(productDetail.marketName).toEqual(market.name);
+        expect(productDetail.userName).toEqual(user.name);
       });
     });
   });
