@@ -8,7 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { MarketService } from './market.service';
-import { MarketCreate, MarketUpdate } from './market.dto';
+import { MarketDto } from './market.dto';
 import { User } from '../user/user.entity';
 import { CurrentUser } from '../../module/auth/auth.decorator';
 import { JwtGuard } from '../../module/auth/jwt/jwt.guard';
@@ -21,7 +21,7 @@ export class MarketController {
   @Post()
   @UseGuards(JwtGuard)
   async postMarket(
-    @Body() marketCreate: MarketCreate,
+    @Body() marketCreate: MarketDto,
     @CurrentUser() user: User,
   ): Promise<void> {
     await this.marketService.createMarket(marketCreate, user.id);
@@ -31,7 +31,7 @@ export class MarketController {
   @UseGuards(JwtGuard)
   async putMarket(
     @Param('marketId', IdPipe) marketId: number,
-    @Body() marketUpdate: MarketUpdate,
+    @Body() marketUpdate: MarketDto,
     @CurrentUser() user: User,
   ): Promise<void> {
     await this.marketService.updateMarket(marketId, marketUpdate, user.id);

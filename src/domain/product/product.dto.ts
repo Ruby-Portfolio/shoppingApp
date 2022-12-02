@@ -3,7 +3,7 @@ import { ProductErrorMessage } from './product.message';
 import { IsId } from '../../common/validator/id.validator';
 import { MarketErrorMessage } from '../market/market.message';
 
-export class ProductCreate {
+export class ProductDto {
   @Length(1, 20, { message: ProductErrorMessage.NAME_LENGTH })
   name: string;
 
@@ -16,7 +16,7 @@ export class ProductCreate {
   stock: number;
 
   @IsOptional()
-  description: string;
+  description?: string;
 
   @IsId({ message: MarketErrorMessage.ID_POSITIVE })
   marketId: number;

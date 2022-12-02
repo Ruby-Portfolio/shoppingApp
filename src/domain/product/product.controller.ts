@@ -3,7 +3,7 @@ import { ProductService } from './product.service';
 import { JwtGuard } from '../../module/auth/jwt/jwt.guard';
 import { CurrentUser } from '../../module/auth/auth.decorator';
 import { User } from '../user/user.entity';
-import { ProductCreate } from './product.dto';
+import { ProductDto } from './product.dto';
 
 @Controller('products')
 export class ProductController {
@@ -12,7 +12,7 @@ export class ProductController {
   @Post()
   @UseGuards(JwtGuard)
   async postProduct(
-    @Body() productCreate: ProductCreate,
+    @Body() productCreate: ProductDto,
     @CurrentUser() user: User,
   ): Promise<void> {
     await this.productService.createProduct(productCreate, user.id);

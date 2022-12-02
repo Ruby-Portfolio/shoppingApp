@@ -7,7 +7,7 @@ import * as redisStore from 'cache-manager-ioredis';
 import { MarketCache } from '../../../src/domain/market/market.cache';
 import { ProductRepository } from '../../../src/domain/product/product.repository';
 import { ProductService } from '../../../src/domain/product/product.service';
-import { ProductCreate } from '../../../src/domain/product/product.dto';
+import { ProductDto } from '../../../src/domain/product/product.dto';
 import { MarketNotFoundException } from '../../../src/domain/market/market.exception';
 import { ProductInsertFailException } from '../../../src/domain/product/product.exception';
 import { InsertResult } from 'typeorm';
@@ -50,7 +50,7 @@ describe('ProductService', () => {
         jest.spyOn(marketCache, 'getMarketCache').mockResolvedValue(null);
 
         await expect(
-          productService.createProduct({} as ProductCreate, 10),
+          productService.createProduct({} as ProductDto, 10),
         ).rejects.toEqual(new MarketNotFoundException());
       });
 
@@ -62,7 +62,7 @@ describe('ProductService', () => {
         jest.spyOn(productRepository, 'insert').mockResolvedValue(null);
 
         await expect(
-          productService.createProduct({} as ProductCreate, 10),
+          productService.createProduct({} as ProductDto, 10),
         ).rejects.toEqual(new ProductInsertFailException());
       });
     });
@@ -78,7 +78,7 @@ describe('ProductService', () => {
           .mockResolvedValue({ raw: { affectedRows: 1 } } as InsertResult);
 
         await expect(
-          productService.createProduct({} as ProductCreate, 10),
+          productService.createProduct({} as ProductDto, 10),
         ).resolves.toEqual(undefined);
       });
     });

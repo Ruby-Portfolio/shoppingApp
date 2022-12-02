@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { MarketRepository } from './market.repository';
-import { MarketCreate, MarketUpdate } from './market.dto';
+import { MarketDto } from './market.dto';
 import {
   MarketInsertFailException,
   MarketNotFoundException,
@@ -10,10 +10,7 @@ import {
 export class MarketService {
   constructor(private readonly marketRepository: MarketRepository) {}
 
-  async createMarket(
-    marketCreate: MarketCreate,
-    userId: number,
-  ): Promise<void> {
+  async createMarket(marketCreate: MarketDto, userId: number): Promise<void> {
     const insertResult = await this.marketRepository
       .insert({
         ...marketCreate,
@@ -28,7 +25,7 @@ export class MarketService {
 
   async updateMarket(
     marketId: number,
-    marketUpdate: MarketUpdate,
+    marketUpdate: MarketDto,
     userId: number,
   ): Promise<void> {
     const updateResult = await this.marketRepository
