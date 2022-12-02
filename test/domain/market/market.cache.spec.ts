@@ -12,6 +12,7 @@ import * as redisStore from 'cache-manager-ioredis';
 import { MarketCache } from '../../../src/domain/market/market.cache';
 
 describe('MarketCache', () => {
+  let userRepository: UserRepository;
   let marketRepository: MarketRepository;
   let cacheManager: Cache;
   let marketCache: MarketCache;
@@ -71,6 +72,11 @@ describe('MarketCache', () => {
     });
   });
 
+  afterAll(async () => {
+    await marketRepository.delete({});
+    await userRepository.delete({});
+  });
+
   describe('getMarketCache - 캐시된 마켓 정보 조회', () => {
     describe('캐시된 마켓 정보가 없을 경우', () => {
       beforeAll(async () => {
@@ -98,7 +104,7 @@ describe('MarketCache', () => {
       test('캐시된 마켓 정보가 있을 경우 캐시에서 조회', async () => {
         jest
           .spyOn(marketRepository, 'findOneBy')
-          .mockResolvedValue(Promise.resolve(new Market()));
+          .mockResolvedValue(Promise.resolve(null));
 
         const cacheMarket = await marketCache.getMarketCache(
           market.id,
