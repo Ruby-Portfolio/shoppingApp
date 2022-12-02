@@ -308,4 +308,86 @@ describe('ProductController (e2e)', () => {
       });
     });
   });
+
+  describe('상품 정보 삭제', () => {
+    let product: Product;
+    beforeAll(async () => {
+      product = await productRepository.save({
+        name: '루비',
+        price: 10000000,
+        stock: 10,
+        description: '보석',
+        marketId: market.id,
+      });
+    });
+
+    afterAll(async () => {
+      await productRepository.delete({});
+    });
+
+    describe('요청 실패', () => {
+      test('인증되지 않은 사용자의 마켓 정보 등록시 401 응답', async () => {
+        await request(app.getHttpServer())
+          .delete(`/api/products/${product.id}`)
+          .send({
+            marketId: market.id,
+          })
+          .expect(HttpStatus.UNAUTHORIZED);
+      });
+
+      test('상품 정보 삭제시 필요한 값들이 형식에 맞지 않을 경우 400 응답', async () => {
+        const res = await request(app.getHttpServer())
+          .delete(`/api/products/${product.id}`)
+          .send({
+            marketId: -1,
+          })
+          .set('Cookie', [`Authentication=${token}`])
+          .expect(HttpStatus.BAD_REQUEST);
+
+        const errorMessages = res.body.message;
+        expect(errorMessages).toContain(MarketErrorMessage.ID_POSITIVE);
+      });
+
+      test('마켓 id가 상품에 등록된 마켓 id 와 일치하지 않을 경우 404 응답', async () => {
+        const res = await request(app.getHttpServer())
+          .delete(`/api/products/${product.id}`)
+          .send({
+            marketId: market.id + 999,
+          })
+          .set('Cookie', [`Authentication=${token}`])
+          .expect(HttpStatus.NOT_FOUND);
+
+        const errorMessage = res.body.message;
+        expect(errorMessage).toContain(MarketNotFoundException.ERROR_MESSAGE);
+      });
+
+      test('상품 id가 일치하지 않을 경우 404 응답', async () => {
+        const res = await request(app.getHttpServer())
+          .delete(`/api/products/${product.id + 999}`)
+          .send({
+            marketId: market.id,
+          })
+          .set('Cookie', [`Authentication=${token}`])
+          .expect(HttpStatus.NOT_FOUND);
+
+        const errorMessage = res.body.message;
+        expect(errorMessage).toContain(ProductNotFoundException.ERROR_MESSAGE);
+      });
+    });
+
+    describe('요청 성공', () => {
+      test('상품 정보 삭제 성공', async () => {
+        await request(app.getHttpServer())
+          .delete(`/api/products/${product.id}`)
+          .send({
+            marketId: market.id,
+          })
+          .set('Cookie', [`Authentication=${token}`])
+          .expect(HttpStatus.OK);
+
+        const count = await productRepository.count();
+        expect(count).toEqual(0);
+      });
+    });
+  });
 });
