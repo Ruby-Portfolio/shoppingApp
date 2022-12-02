@@ -52,7 +52,7 @@ describe('MarketCache', () => {
       providers: [MarketCache],
     }).compile();
 
-    const userRepository = module.get<UserRepository>(UserRepository);
+    userRepository = module.get<UserRepository>(UserRepository);
     marketRepository = module.get<MarketRepository>(MarketRepository);
     cacheManager = module.get(CACHE_MANAGER);
     marketCache = module.get<MarketCache>(MarketCache);

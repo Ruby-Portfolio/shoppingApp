@@ -74,6 +74,12 @@ describe('ProductRepository', () => {
     });
   });
 
+  afterAll(async () => {
+    await productRepository.delete({});
+    await marketRepository.delete({});
+    await userRepository.delete({});
+  });
+
   describe('getProductDetail - 상품 정보 상세 조회', () => {
     let product: Product;
     beforeAll(async () => {

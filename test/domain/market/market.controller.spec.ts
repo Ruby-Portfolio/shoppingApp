@@ -26,6 +26,7 @@ import { Cache } from 'cache-manager';
 
 describe('MarketController (e2e)', () => {
   let app: INestApplication;
+  let userRepository: UserRepository;
   let marketRepository: MarketRepository;
   let cacheManager: Cache;
   let user: User;
@@ -82,7 +83,7 @@ describe('MarketController (e2e)', () => {
     });
     await app.init();
 
-    const userRepository = module.get<UserRepository>(UserRepository);
+    userRepository = module.get<UserRepository>(UserRepository);
     marketRepository = module.get<MarketRepository>(MarketRepository);
     cacheManager = module.get(CACHE_MANAGER);
 
@@ -96,6 +97,11 @@ describe('MarketController (e2e)', () => {
     });
     const jwtService = module.get<JwtService>(JwtService);
     token = await jwtService.sign({ ...user } as Payload);
+  });
+
+  afterAll(async () => {
+    await marketRepository.delete({});
+    await userRepository.delete({});
   });
 
   describe('마켓 정보 등록', () => {

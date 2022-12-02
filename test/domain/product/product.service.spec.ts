@@ -14,6 +14,7 @@ import {
   ProductNotFoundException,
 } from '../../../src/domain/product/product.exception';
 import { InsertResult, UpdateResult } from 'typeorm';
+import { ProductCache } from '../../../src/domain/product/product.cache';
 
 describe('ProductService', () => {
   let productRepository: ProductRepository;
@@ -37,8 +38,9 @@ describe('ProductService', () => {
       providers: [
         ProductRepository,
         MarketRepository,
-        MarketCache,
         ProductService,
+        MarketCache,
+        ProductCache,
       ],
     }).compile();
 
