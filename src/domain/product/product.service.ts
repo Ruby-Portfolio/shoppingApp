@@ -8,7 +8,6 @@ import {
   ProductNotFoundException,
 } from './product.exception';
 import { MarketNotFoundException } from '../market/market.exception';
-import { UpdateResult } from 'typeorm';
 
 @Injectable()
 export class ProductService {
@@ -64,7 +63,6 @@ export class ProductService {
       throw new MarketNotFoundException();
     }
 
-    UpdateResult;
     const deleteResult = await this.productRepository
       .softDelete({
         id: productId,
