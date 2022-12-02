@@ -14,14 +14,10 @@ import { CurrentUser } from '../../module/auth/auth.decorator';
 import { User } from '../user/user.entity';
 import { ProductDeleteDto, ProductDetailDto, ProductDto } from './product.dto';
 import { IdPipe } from '../../common/pipe/id.pipe';
-import { ProductCache } from './product.cache';
 
 @Controller('products')
 export class ProductController {
-  constructor(
-    private readonly productService: ProductService,
-    private readonly productCache: ProductCache,
-  ) {}
+  constructor(private readonly productService: ProductService) {}
 
   @Post()
   @UseGuards(JwtGuard)
@@ -36,7 +32,7 @@ export class ProductController {
   async getProductDetail(
     @Param('productId', IdPipe) productId: number,
   ): Promise<ProductDetailDto> {
-    return this.productCache.getProductDetailCache(productId);
+    return this.productService.getProductDetail(productId);
   }
 
   @Put(':productId')

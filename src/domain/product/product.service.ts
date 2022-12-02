@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { MarketRepository } from '../market/market.repository';
 import { ProductRepository } from './product.repository';
-import { ProductDto } from './product.dto';
+import { ProductDetailDto, ProductDto } from './product.dto';
 import { MarketCache } from '../market/market.cache';
 import {
   ProductInsertFailException,
@@ -35,6 +35,17 @@ export class ProductService {
     if (!insertResult) {
       throw new ProductInsertFailException();
     }
+  }
+
+  async getProductDetail(productId: number): Promise<ProductDetailDto> {
+    const productDetail: ProductDetailDto =
+      await this.productCache.getProductDetailCache(productId);
+
+    if (!productDetail) {
+      throw new ProductNotFoundException();
+    }
+
+    return productDetail;
   }
 
   async updateProduct(
