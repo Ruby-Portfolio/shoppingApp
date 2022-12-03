@@ -36,4 +36,15 @@ export class ProductCache {
 
     return products;
   }
+
+  async getDeleteProductsCacheByMarket(marketId: number) {
+    const productIds: number[] =
+      await this.productRepository.getProductIdsByMarket(marketId);
+
+    await Promise.all(
+      productIds.map((productId) =>
+        this.cacheManager.del(`productDetail_${productId}`),
+      ),
+    );
+  }
 }

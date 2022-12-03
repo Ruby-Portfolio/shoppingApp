@@ -169,7 +169,7 @@ describe('MarketController (e2e)', () => {
         userId: user.id,
       });
 
-      marketCacheKey = `market_${market.id}_${user.id}`;
+      marketCacheKey = `market_${market.id}`;
       await cacheManager.set(marketCacheKey, market);
     });
 
@@ -257,7 +257,7 @@ describe('MarketController (e2e)', () => {
         userId: user.id,
       });
 
-      marketCacheKey = `market_${market.id}_${user.id}`;
+      marketCacheKey = `market_${market.id}`;
       await cacheManager.set(marketCacheKey, market);
     });
 

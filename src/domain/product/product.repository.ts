@@ -47,4 +47,11 @@ export class ProductRepository extends Repository<Product> {
 
     return { products };
   }
+
+  async getProductIdsByMarket(marketId: number): Promise<number[]> {
+    return this.createQueryBuilder('product')
+      .select(['product.marketId'])
+      .where({ marketId })
+      .getRawMany();
+  }
 }
