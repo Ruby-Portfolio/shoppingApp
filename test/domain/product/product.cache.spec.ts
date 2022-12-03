@@ -204,4 +204,25 @@ describe('ProductCache', () => {
       });
     });
   });
+
+  describe('getDeleteProductsCacheByMarket - 마켓 id에 해당하는 캐시된 상품 목록 초기화', () => {
+    let productIds: number[];
+    beforeAll(async () => {
+      productIds = [];
+      for (let i = 0; i < 7; i++) {
+        productIds.push(i);
+        await cacheManager.set(`productDetail_${i}`, 'data');
+      }
+    });
+
+    test('마켓 id에 해당하는 캐시된 상품 목록 초기화', async () => {
+      jest
+        .spyOn(productRepository, 'getProductIdsByMarket')
+        .mockResolvedValue(productIds);
+
+      await productCache.getDeleteProductsCacheByMarket(123);
+      const productKeys = await cacheManager.store.keys('productDetail*');
+      expect(productKeys.length).toEqual(0);
+    });
+  });
 });
