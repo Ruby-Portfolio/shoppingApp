@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -28,8 +29,6 @@ import { ProductCacheInterceptor } from './product.interceptor';
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
-  // interceptor 를 통해 CUD 요청시 목록을 초기화 해야함
-
   @Post()
   @UseGuards(JwtGuard)
   async postProduct(
@@ -47,9 +46,8 @@ export class ProductController {
   }
 
   @Get()
-  @UseInterceptors(ProductCacheInterceptor)
   async getProducts(
-    @Body() productsSearch: ProductsSearch,
+    @Query() productsSearch: ProductsSearch,
   ): Promise<ProductsDto> {
     return this.productService.getProducts(productsSearch);
   }

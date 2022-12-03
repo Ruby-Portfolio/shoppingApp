@@ -7,7 +7,10 @@ import * as redisStore from 'cache-manager-ioredis';
 import { MarketCache } from '../../../src/domain/market/market.cache';
 import { ProductRepository } from '../../../src/domain/product/product.repository';
 import { ProductService } from '../../../src/domain/product/product.service';
-import { ProductDto } from '../../../src/domain/product/product.dto';
+import {
+  ProductDetailDto,
+  ProductDto,
+} from '../../../src/domain/product/product.dto';
 import { MarketNotFoundException } from '../../../src/domain/market/market.exception';
 import {
   ProductInsertFailException,
@@ -20,6 +23,7 @@ describe('ProductService', () => {
   let productRepository: ProductRepository;
   let productService: ProductService;
   let marketCache: MarketCache;
+  let productCache: ProductCache;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -47,6 +51,7 @@ describe('ProductService', () => {
     productRepository = module.get<ProductRepository>(ProductRepository);
     productService = module.get<ProductService>(ProductService);
     marketCache = module.get<MarketCache>(MarketCache);
+    productCache = module.get<ProductCache>(ProductCache);
   });
 
   describe('createProduct - 상품 정보 저장', () => {
@@ -210,6 +215,35 @@ describe('ProductService', () => {
         await expect(
           productService.deleteProduct(productId, marketId, userId),
         ).resolves.toEqual(undefined);
+      });
+    });
+  });
+
+  describe('getProductDetail - 상품 상세 조회', () => {
+    describe('조회 실패', () => {
+      test('캐시 및 DB 에 데이터가 존재하지 않을 경우', async () => {
+        const productId = 123;
+        jest
+          .spyOn(productCache, 'getProductDetailCache')
+          .mockResolvedValue(null);
+
+        await expect(
+          productService.getProductDetail(productId),
+        ).rejects.toEqual(new ProductNotFoundException());
+      });
+    });
+
+    describe('조회 성공', () => {
+      test('캐시 및 DB 에 데이터가 존재할 경우', async () => {
+        const productId = 123;
+        const productDetailDto: ProductDetailDto = new ProductDetailDto();
+        jest
+          .spyOn(productCache, 'getProductDetailCache')
+          .mockResolvedValue(productDetailDto);
+
+        await expect(
+          productService.getProductDetail(productId),
+        ).resolves.toEqual(productDetailDto);
       });
     });
   });

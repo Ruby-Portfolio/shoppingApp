@@ -40,6 +40,7 @@ export class MarketService {
       throw new MarketNotFoundException();
     }
 
+    // TODO : 마켓과 마켓에 속한 상품 캐시데이터를 모두 삭제해야함, market, productDetail*
     await this.marketCache.deleteMarketCache(marketId, userId);
   }
 
@@ -55,6 +56,7 @@ export class MarketService {
       throw new MarketNotFoundException();
     }
 
+    // TODO : 마켓과 마켓에 속한 상품 캐시데이터를 모두 삭제해야함
     await this.marketCache.deleteMarketCache(marketId, userId);
   }
 }

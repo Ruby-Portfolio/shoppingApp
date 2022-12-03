@@ -536,4 +536,72 @@ describe('ProductController (e2e)', () => {
       });
     });
   });
+
+  describe('상품 목록 조회', () => {
+    beforeAll(async () => {
+      for (let i = 0; i < 35; i++) {
+        await productRepository.save({
+          name: i % 2 === 0 ? '루비' : '다이아',
+          price: i % 2 === 0 ? 10000000 : 70000000,
+          stock: 10,
+          description: i % 2 === 0 ? '루비보석' : '다이아보석',
+          marketId: market.id,
+        });
+      }
+    });
+
+    afterAll(async () => {
+      await productRepository.delete({});
+    });
+
+    describe('요청 실패', () => {
+      test('페이지 번호가 0보다 작을 경우 400 응답', async () => {
+        await request(app.getHttpServer())
+          .get(`/api/products`)
+          .query({
+            page: -1,
+          })
+          .expect(HttpStatus.BAD_REQUEST);
+      });
+    });
+    describe('요청 성공', () => {
+      test('상품 목록 조회시 상품명에 해당하는 목록 조회', async () => {
+        const res = await request(app.getHttpServer())
+          .get(`/api/products`)
+          .query({
+            keyword: '루',
+            page: 1,
+          })
+          .expect(HttpStatus.OK);
+
+        const products = res.body.products;
+        expect(products.length).toEqual(8);
+        expect(
+          products.every((product) => product.name === '루비'),
+        ).toBeTruthy();
+        expect(
+          products.every((product) => product.price === 10000000),
+        ).toBeTruthy();
+      });
+
+      test('상품 목록 조회시 상품 설명에 해당하는 목록 조회', async () => {
+        const res = await request(app.getHttpServer())
+          .get(`/api/products`)
+          .query({
+            keyword: '아보',
+            page: 0,
+          })
+          .expect(HttpStatus.OK);
+
+        const products = res.body.products;
+        expect(products.length).toEqual(10);
+        expect(
+          products.every((product) => product.name === '다이아'),
+        ).toBeTruthy();
+        expect(
+          products.every((product) => product.price === 70000000),
+        ).toBeTruthy();
+      });
+    });
+  });
 });

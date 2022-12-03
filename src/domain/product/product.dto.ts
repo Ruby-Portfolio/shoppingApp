@@ -41,7 +41,7 @@ export class ProductsSearch {
   @IsOptional()
   keyword: string = '';
 
-  @IsInt({ message: ProductErrorMessage.PAGE_POSITIVE })
+  @IsOptional()
   @Min(0, { message: ProductErrorMessage.PAGE_POSITIVE })
   page: number = 0;
 }
