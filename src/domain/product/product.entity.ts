@@ -5,27 +5,33 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { User } from '../user/user.entity';
 import { DateColumns } from '../embedded/dateColumns';
+import { Market } from '../market/market.entity';
 
 @Entity()
-export class Market {
+export class Product {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
   name: string;
 
+  @Column()
+  price: number;
+
+  @Column()
+  stock: number;
+
   @Column({ nullable: true })
   description: string;
 
   @Column()
-  userId: number;
+  marketId: number;
 
   @Column(() => DateColumns, { prefix: false })
   dateColumns: DateColumns;
 
-  @ManyToOne(() => User)
-  @JoinColumn({ name: 'userId' })
-  user: User;
+  @ManyToOne(() => Market)
+  @JoinColumn({ name: 'marketId' })
+  market: Market;
 }

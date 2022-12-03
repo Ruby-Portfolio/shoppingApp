@@ -1,18 +1,19 @@
-import { ArgumentMetadata, Injectable, PipeTransform } from "@nestjs/common";
-import { InvalidIdException } from "../exception/id.exception";
+import { registerDecorator, ValidationOptions } from 'class-validator';
 
-@Injectable()
-export class IdPipe implements PipeTransform {
-
-  isId(id: number) {
-    return id > 0;
-  }
-
-  transform(id: number, metadata: ArgumentMetadata): number {
-    if (this.isId(id)) {
-      return id;
-    }
-
-    throw new InvalidIdException();
-  }
-}
+export const IsId: Function = (
+  validationOptions?: ValidationOptions,
+): Function => {
+  return (object: Object, propertyName: string): void => {
+    registerDecorator({
+      name: 'isId',
+      target: object.constructor,
+      propertyName: propertyName,
+      options: validationOptions,
+      validator: {
+        validate(value: number): boolean {
+          return value > 0;
+        },
+      },
+    });
+  };
+};

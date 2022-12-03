@@ -1,26 +1,23 @@
 import { Injectable } from '@nestjs/common';
-import { UserRepository } from '../user/user.repository';
 import { MarketRepository } from './market.repository';
-import { MarketCreate, MarketUpdate } from './market.dto';
+import { MarketDto } from './market.dto';
 import {
   MarketInsertFailException,
   MarketNotFoundException,
 } from './market.exception';
+import { ProductCache } from '../product/product.cache';
 
 @Injectable()
 export class MarketService {
   constructor(
-    private readonly userRepository: UserRepository,
     private readonly marketRepository: MarketRepository,
+    private readonly productCache: ProductCache,
   ) {}
 
-  async createMarket(
-    marketCreate: MarketCreate,
-    userId: number,
-  ): Promise<void> {
+  async createMarket(marketDto: MarketDto, userId: number): Promise<void> {
     const insertResult = await this.marketRepository
       .insert({
-        ...marketCreate,
+        ...marketDto,
         userId,
       })
       .then((insertResult) => !!insertResult.raw.affectedRows);
@@ -32,16 +29,18 @@ export class MarketService {
 
   async updateMarket(
     marketId: number,
-    marketUpdate: MarketUpdate,
+    marketDto: MarketDto,
     userId: number,
   ): Promise<void> {
     const updateResult = await this.marketRepository
-      .update({ id: marketId }, { ...marketUpdate, userId })
-      .then((updateResult) => !!updateResult.affected);
+      .update({ id: marketId }, { ...marketDto, userId })
+      .then((updateResult) => !!updateResult?.affected);
 
     if (!updateResult) {
       throw new MarketNotFoundException();
     }
+
+    await this.productCache.getDeleteProductsCacheByMarket(marketId);
   }
 
   async deleteMarket(marketId: number, userId: number): Promise<void> {
@@ -50,10 +49,12 @@ export class MarketService {
         id: marketId,
         userId,
       })
-      .then((updateResult) => !!updateResult.affected);
+      .then((updateResult) => !!updateResult?.affected);
 
     if (!deleteResult) {
       throw new MarketNotFoundException();
     }
+
+    await this.productCache.getDeleteProductsCacheByMarket(marketId);
   }
 }

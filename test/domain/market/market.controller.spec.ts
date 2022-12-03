@@ -1,4 +1,10 @@
-import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
+import {
+  CACHE_MANAGER,
+  CacheModule,
+  HttpStatus,
+  INestApplication,
+  ValidationPipe,
+} from '@nestjs/common';
 import { User } from '../../../src/domain/user/user.entity';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
@@ -15,10 +21,15 @@ import { JwtService } from '@nestjs/jwt';
 import { Payload } from '../../../src/module/auth/jwt/jwt.payload';
 import { MarketErrorMessage } from '../../../src/domain/market/market.message';
 import { MarketNotFoundException } from '../../../src/domain/market/market.exception';
+import * as redisStore from 'cache-manager-ioredis';
+import { Cache } from 'cache-manager';
+import { Product } from '../../../src/domain/product/product.entity';
 
 describe('MarketController (e2e)', () => {
   let app: INestApplication;
+  let userRepository: UserRepository;
   let marketRepository: MarketRepository;
+  let cacheManager: Cache;
   let user: User;
   let token: string;
 
@@ -35,10 +46,17 @@ describe('MarketController (e2e)', () => {
           username: process.env.DB_USERNAME,
           password: process.env.DB_PASSWORD,
           database: process.env.DB_DATABASE,
-          entities: [User, Market],
+          entities: [User, Market, Product],
           charset: 'utf8mb4',
           synchronize: true,
           logging: true,
+        }),
+        CacheModule.register({
+          store: redisStore,
+          host: process.env.REDIS_HOST,
+          port: process.env.REDIS_PORT,
+          ttl: +process.env.REDIS_TTL,
+          isGlobal: true,
         }),
         AuthModule,
         MarketModule,
@@ -66,8 +84,10 @@ describe('MarketController (e2e)', () => {
     });
     await app.init();
 
-    const userRepository = module.get<UserRepository>(UserRepository);
+    userRepository = module.get<UserRepository>(UserRepository);
     marketRepository = module.get<MarketRepository>(MarketRepository);
+    cacheManager = module.get(CACHE_MANAGER);
+
     await marketRepository.delete({});
     await userRepository.delete({});
     user = await userRepository.save({
@@ -78,6 +98,11 @@ describe('MarketController (e2e)', () => {
     });
     const jwtService = module.get<JwtService>(JwtService);
     token = await jwtService.sign({ ...user } as Payload);
+  });
+
+  afterAll(async () => {
+    await marketRepository.delete({});
+    await userRepository.delete({});
   });
 
   describe('마켓 정보 등록', () => {
@@ -107,7 +132,7 @@ describe('MarketController (e2e)', () => {
           .expect(HttpStatus.BAD_REQUEST);
 
         const errorMessages = res.body.message;
-        expect(errorMessages).toContain(MarketErrorMessage.MARKET_NAME_LENGTH);
+        expect(errorMessages).toContain(MarketErrorMessage.NAME_LENGTH);
       });
     });
 
@@ -137,12 +162,16 @@ describe('MarketController (e2e)', () => {
 
   describe('마켓 정보 수정', () => {
     let market: Market;
+    let marketCacheKey: string;
     beforeAll(async () => {
       market = await marketRepository.save({
         name: '루비 마켓',
         description: '루비의 상점입니다.',
         userId: user.id,
       });
+
+      marketCacheKey = `market_${market.id}`;
+      await cacheManager.set(marketCacheKey, market);
     });
 
     afterAll(async () => {
@@ -158,6 +187,9 @@ describe('MarketController (e2e)', () => {
             description: '루비의 마트입니다.',
           })
           .expect(HttpStatus.UNAUTHORIZED);
+
+        const cacheMarket = await cacheManager.get(marketCacheKey);
+        expect(cacheMarket).toBeTruthy();
       });
 
       test('마켓 정보 수정시 필요한 값들이 형식에 맞지 않을 경우 400 응답', async () => {
@@ -171,7 +203,9 @@ describe('MarketController (e2e)', () => {
           .expect(HttpStatus.BAD_REQUEST);
 
         const errorMessages = res.body.message;
-        expect(errorMessages).toContain(MarketErrorMessage.MARKET_NAME_LENGTH);
+        const cacheMarket = await cacheManager.get(marketCacheKey);
+        expect(errorMessages).toContain(MarketErrorMessage.NAME_LENGTH);
+        expect(cacheMarket).toBeTruthy();
       });
 
       test('등록되지 않은 마켓 정보 수정 요청시 404 응답', async () => {
@@ -185,7 +219,9 @@ describe('MarketController (e2e)', () => {
           .expect(HttpStatus.NOT_FOUND);
 
         const errorMessage = res.body.message;
+        const cacheMarket = await cacheManager.get(marketCacheKey);
         expect(errorMessage).toEqual(MarketNotFoundException.ERROR_MESSAGE);
+        expect(cacheMarket).toBeTruthy();
       });
     });
 
@@ -203,21 +239,27 @@ describe('MarketController (e2e)', () => {
           .expect(HttpStatus.OK);
 
         const updatedMarket = (await marketRepository.findBy({}))[0];
+        const cacheMarket = await cacheManager.get(marketCacheKey);
         expect(updatedMarket.id).toEqual(market.id);
         expect(updatedMarket.name).toEqual(marketUpdate.name);
         expect(updatedMarket.description).toEqual(marketUpdate.description);
+        expect(cacheMarket).toBeNull();
       });
     });
   });
 
   describe('마켓 정보 삭제', () => {
     let market: Market;
+    let marketCacheKey: string;
     beforeAll(async () => {
       market = await marketRepository.save({
         name: '루비 마켓',
         description: '루비의 상점입니다.',
         userId: user.id,
       });
+
+      marketCacheKey = `market_${market.id}`;
+      await cacheManager.set(marketCacheKey, market);
     });
 
     afterAll(async () => {
@@ -229,6 +271,9 @@ describe('MarketController (e2e)', () => {
         await request(app.getHttpServer())
           .delete(`/api/markets/${market.id}`)
           .expect(HttpStatus.UNAUTHORIZED);
+
+        const cacheMarket = await cacheManager.get(marketCacheKey);
+        expect(cacheMarket).toBeTruthy();
       });
 
       test('등록되지 않은 마켓 정보 삭제 요청시 404 응답', async () => {
@@ -238,7 +283,9 @@ describe('MarketController (e2e)', () => {
           .expect(HttpStatus.NOT_FOUND);
 
         const errorMessage = res.body.message;
+        const cacheMarket = await cacheManager.get(marketCacheKey);
         expect(errorMessage).toEqual(MarketNotFoundException.ERROR_MESSAGE);
+        expect(cacheMarket).toBeTruthy();
       });
     });
     describe('요청 성공', () => {
@@ -249,7 +296,9 @@ describe('MarketController (e2e)', () => {
           .expect(HttpStatus.OK);
 
         const marketCount = await marketRepository.count();
+        const cacheMarket = await cacheManager.get(marketCacheKey);
         expect(marketCount).toEqual(0);
+        expect(cacheMarket).toBeNull();
       });
     });
   });
