@@ -13,7 +13,11 @@ import { MarketCache } from '../../../src/domain/market/market.cache';
 import { ProductRepository } from '../../../src/domain/product/product.repository';
 import { ProductCache } from '../../../src/domain/product/product.cache';
 import { Product } from '../../../src/domain/product/product.entity';
-import { ProductDetailDto } from '../../../src/domain/product/product.dto';
+import {
+  ProductDetailDto,
+  ProductsDto,
+  ProductsSearch,
+} from '../../../src/domain/product/product.dto';
 
 describe('ProductCache', () => {
   let userRepository: UserRepository;
@@ -149,42 +153,55 @@ describe('ProductCache', () => {
     });
   });
 
-  describe('deleteProductDetailCache - 캐시된 상품 상세 정보 삭제', () => {
-    let productDetailKey;
-    beforeAll(async () => {
-      productDetailKey = `productDetail_${product.id}`;
-      const productDetail: ProductDetailDto = {
-        ...product,
-        marketName: market.name,
-        userName: user.name,
-      };
+  describe('getProductsCache - 캐시된 상품 목록 조회', () => {
+    describe('캐시된 상품 목록이 없을 경우', () => {
+      beforeAll(async () => {
+        await cacheManager.reset();
+      });
 
-      await cacheManager.reset();
-      await cacheManager.set(productDetailKey, productDetail);
+      test('캐시된 상품 목록이 없을 경우 DB 에서 조회, 조회된 데이터를 캐싱', async () => {
+        const products = new ProductsDto();
+        jest
+          .spyOn(productRepository, 'getProducts')
+          .mockResolvedValue(products);
+
+        const productsSearch: ProductsSearch = {
+          keyword: 'date',
+          page: 0,
+        };
+
+        const findProducts: ProductsDto = await productCache.getProductsCache(
+          productsSearch,
+        );
+        expect(findProducts).toEqual(products);
+      });
     });
 
-    test('상품 id가 다를 경우 캐시 삭제되지 않음', async () => {
-      await productCache.deleteProductDetailCache(product.id + 999);
-      const productDetail: ProductDetailDto = await cacheManager.get(
-        productDetailKey,
-      );
+    describe('캐시된 상품 목록이 있을 경우', () => {
+      let productsKey;
+      let productsSearch: ProductsSearch;
+      let products: ProductsDto;
+      beforeAll(async () => {
+        await cacheManager.reset();
+        productsSearch = {
+          keyword: 'data',
+          page: 0,
+        };
 
-      expect(productDetail.id).toEqual(product.id);
-      expect(productDetail.name).toEqual(product.name);
-      expect(productDetail.price).toEqual(product.price);
-      expect(productDetail.stock).toEqual(product.stock);
-      expect(productDetail.description).toEqual(product.description);
-      expect(productDetail.marketName).toEqual(market.name);
-      expect(productDetail.userName).toEqual(user.name);
-    });
+        productsKey = `products_${productsSearch.keyword}_${productsSearch.page}`;
+        products = new ProductsDto();
+        await cacheManager.set(productsKey, products);
+      });
 
-    test('캐시된 상품 상세 정보 삭제', async () => {
-      await productCache.deleteProductDetailCache(product.id);
-      const productDetail: ProductDetailDto = await cacheManager.get(
-        productDetailKey,
-      );
+      test('캐시된 상품 상세 목록이 있을 경우 캐시에서 조회', async () => {
+        jest.spyOn(productRepository, 'getProducts').mockResolvedValue(null);
 
-      expect(productDetail).toBeNull();
+        const findProducts: ProductsDto = await productCache.getProductsCache(
+          productsSearch,
+        );
+
+        expect(findProducts).toEqual(products);
+      });
     });
   });
 });

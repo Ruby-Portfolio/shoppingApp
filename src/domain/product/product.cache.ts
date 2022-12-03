@@ -10,16 +10,8 @@ export class ProductCache {
     private readonly productRepository: ProductRepository,
   ) {}
 
-  getProductDetailCacheKey(productId: number): string {
-    return `productDetail_${productId}`;
-  }
-
-  getProductsCacheKey(productsSearch: ProductsSearch): string {
-    return `products_${productsSearch.keyword}_${productsSearch.page}`;
-  }
-
   async getProductDetailCache(productId: number): Promise<ProductDetailDto> {
-    const productDetailKey = this.getProductDetailCacheKey(productId);
+    const productDetailKey = `productDetail_${productId}`;
     let productDetail: ProductDetailDto = await this.cacheManager.get(
       productDetailKey,
     );
@@ -34,7 +26,7 @@ export class ProductCache {
   }
 
   async getProductsCache(productsSearch: ProductsSearch): Promise<ProductsDto> {
-    const productsKey = this.getProductsCacheKey(productsSearch);
+    const productsKey = `products_${productsSearch.keyword}_${productsSearch.page}`;
     let products: ProductsDto = await this.cacheManager.get(productsKey);
 
     if (!products) {
