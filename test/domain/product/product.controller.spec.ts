@@ -1,4 +1,5 @@
 import {
+  CACHE_MANAGER,
   CacheModule,
   HttpStatus,
   INestApplication,
@@ -26,12 +27,14 @@ import { ProductRepository } from '../../../src/domain/product/product.repositor
 import { Product } from '../../../src/domain/product/product.entity';
 import { ProductErrorMessage } from '../../../src/domain/product/product.message';
 import { ProductNotFoundException } from '../../../src/domain/product/product.exception';
+import { Cache } from 'cache-manager';
 
 describe('ProductController (e2e)', () => {
   let app: INestApplication;
   let userRepository: UserRepository;
   let marketRepository: MarketRepository;
   let productRepository: ProductRepository;
+  let cacheManager: Cache;
   let user: User;
   let market: Market;
   let token: string;
@@ -92,6 +95,7 @@ describe('ProductController (e2e)', () => {
     userRepository = module.get<UserRepository>(UserRepository);
     marketRepository = module.get<MarketRepository>(MarketRepository);
     productRepository = module.get<ProductRepository>(ProductRepository);
+    cacheManager = module.get(CACHE_MANAGER);
     const jwtService = module.get<JwtService>(JwtService);
 
     await productRepository.delete({});
@@ -120,8 +124,17 @@ describe('ProductController (e2e)', () => {
   });
 
   describe('상품 정보 등록', () => {
+    let productsCacheKey;
+    let productsCache;
+    beforeAll(async () => {
+      productsCacheKey = 'products_cache_0';
+      productsCache = { data: 'data' };
+      await cacheManager.set('products_cache_0', productsCache);
+    });
+
     afterAll(async () => {
       await productRepository.delete({});
+      await cacheManager.reset();
     });
 
     describe('요청 실패', () => {
@@ -136,6 +149,9 @@ describe('ProductController (e2e)', () => {
             marketId: market.id,
           })
           .expect(HttpStatus.UNAUTHORIZED);
+
+        const cacheData = await cacheManager.get(productsCacheKey);
+        expect(cacheData).toEqual(productsCache);
       });
 
       test('상품 정보 등록시 필요한 값들이 형식에 맞지 않을 경우 400 응답', async () => {
@@ -156,6 +172,9 @@ describe('ProductController (e2e)', () => {
         expect(errorMessages).toContain(ProductErrorMessage.PRICE_POSITIVE);
         expect(errorMessages).toContain(ProductErrorMessage.STOCK_POSITIVE);
         expect(errorMessages).toContain(MarketErrorMessage.ID_POSITIVE);
+
+        const cacheData = await cacheManager.get(productsCacheKey);
+        expect(cacheData).toEqual(productsCache);
       });
 
       test('존재하지 않는 마켓에 상품 정보 등록시 404 응답', async () => {
@@ -173,6 +192,9 @@ describe('ProductController (e2e)', () => {
 
         const errorMessage = res.body.message;
         expect(errorMessage).toEqual(MarketNotFoundException.ERROR_MESSAGE);
+
+        const cacheData = await cacheManager.get(productsCacheKey);
+        expect(cacheData).toEqual(productsCache);
       });
     });
 
@@ -198,12 +220,18 @@ describe('ProductController (e2e)', () => {
         expect(product.stock).toEqual(productCreate.stock);
         expect(product.description).toEqual(productCreate.description);
         expect(product.marketId).toEqual(productCreate.marketId);
+
+        const cacheData = await cacheManager.get(productsCacheKey);
+        expect(cacheData).toBeNull();
       });
     });
   });
 
   describe('상품 정보 수정', () => {
     let product: Product;
+    let productCacheKey;
+    let productsCacheKey;
+    let productsCache;
     beforeAll(async () => {
       product = await productRepository.save({
         name: '루비',
@@ -212,10 +240,17 @@ describe('ProductController (e2e)', () => {
         description: '보석',
         marketId: market.id,
       });
+      productCacheKey = `productDetail_${product.id}`;
+      await cacheManager.set(productCacheKey, product);
+
+      productsCacheKey = 'products_cache_0';
+      productsCache = { data: 'data' };
+      await cacheManager.set(productsCacheKey, productsCache);
     });
 
     afterAll(async () => {
       await productRepository.delete({});
+      await cacheManager.reset();
     });
 
     describe('요청 실패', () => {
@@ -230,6 +265,11 @@ describe('ProductController (e2e)', () => {
             marketId: market.id,
           })
           .expect(HttpStatus.UNAUTHORIZED);
+
+        const findProductCache = await cacheManager.get(productCacheKey);
+        const findProductsCache = await cacheManager.get(productsCacheKey);
+        expect(findProductCache['id']).toEqual(product.id);
+        expect(findProductsCache).toEqual(productsCache);
       });
 
       test('상품 수정시 필요한 값들이 형식에 맞지 않을 경우 400 응답', async () => {
@@ -250,6 +290,11 @@ describe('ProductController (e2e)', () => {
         expect(errorMessages).toContain(ProductErrorMessage.PRICE_POSITIVE);
         expect(errorMessages).toContain(ProductErrorMessage.STOCK_POSITIVE);
         expect(errorMessages).toContain(MarketErrorMessage.ID_POSITIVE);
+
+        const findProductCache = await cacheManager.get(productCacheKey);
+        const findProductsCache = await cacheManager.get(productsCacheKey);
+        expect(findProductCache['id']).toEqual(product.id);
+        expect(findProductsCache).toEqual(productsCache);
       });
 
       test('마켓 id가 상품에 등록된 마켓 id 와 일치하지 않을 경우 404 응답', async () => {
@@ -267,6 +312,11 @@ describe('ProductController (e2e)', () => {
 
         const errorMessages = res.body.message;
         expect(errorMessages).toEqual(MarketNotFoundException.ERROR_MESSAGE);
+
+        const findProductCache = await cacheManager.get(productCacheKey);
+        const findProductsCache = await cacheManager.get(productsCacheKey);
+        expect(findProductCache['id']).toEqual(product.id);
+        expect(findProductsCache).toEqual(productsCache);
       });
 
       test('상품 id가 일치하지 않을 경우 404 응답', async () => {
@@ -284,6 +334,11 @@ describe('ProductController (e2e)', () => {
 
         const errorMessages = res.body.message;
         expect(errorMessages).toEqual(ProductNotFoundException.ERROR_MESSAGE);
+
+        const findProductCache = await cacheManager.get(productCacheKey);
+        const findProductsCache = await cacheManager.get(productsCacheKey);
+        expect(findProductCache['id']).toEqual(product.id);
+        expect(findProductsCache).toEqual(productsCache);
       });
     });
 
@@ -312,12 +367,20 @@ describe('ProductController (e2e)', () => {
         expect(updatedProduct.price).toEqual(productDto.price);
         expect(updatedProduct.stock).toEqual(productDto.stock);
         expect(updatedProduct.description).toEqual(productDto.description);
+
+        const findProductCache = await cacheManager.get(productCacheKey);
+        const findProductsCache = await cacheManager.get(productsCacheKey);
+        expect(findProductCache).toBeNull();
+        expect(findProductsCache).toBeNull();
       });
     });
   });
 
   describe('상품 정보 삭제', () => {
     let product: Product;
+    let productCacheKey;
+    let productsCacheKey;
+    let productsCache;
     beforeAll(async () => {
       product = await productRepository.save({
         name: '루비',
@@ -326,10 +389,18 @@ describe('ProductController (e2e)', () => {
         description: '보석',
         marketId: market.id,
       });
+
+      productCacheKey = `productDetail_${product.id}`;
+      await cacheManager.set(productCacheKey, product);
+
+      productsCacheKey = 'products_cache_0';
+      productsCache = { data: 'data' };
+      await cacheManager.set(productsCacheKey, productsCache);
     });
 
     afterAll(async () => {
       await productRepository.delete({});
+      await cacheManager.reset();
     });
 
     describe('요청 실패', () => {
@@ -340,6 +411,11 @@ describe('ProductController (e2e)', () => {
             marketId: market.id,
           })
           .expect(HttpStatus.UNAUTHORIZED);
+
+        const findProductCache = await cacheManager.get(productCacheKey);
+        const findProductsCache = await cacheManager.get(productsCacheKey);
+        expect(findProductCache['id']).toEqual(product.id);
+        expect(findProductsCache).toEqual(productsCache);
       });
 
       test('상품 정보 삭제시 필요한 값들이 형식에 맞지 않을 경우 400 응답', async () => {
@@ -353,6 +429,11 @@ describe('ProductController (e2e)', () => {
 
         const errorMessages = res.body.message;
         expect(errorMessages).toContain(MarketErrorMessage.ID_POSITIVE);
+
+        const findProductCache = await cacheManager.get(productCacheKey);
+        const findProductsCache = await cacheManager.get(productsCacheKey);
+        expect(findProductCache['id']).toEqual(product.id);
+        expect(findProductsCache).toEqual(productsCache);
       });
 
       test('마켓 id가 상품에 등록된 마켓 id 와 일치하지 않을 경우 404 응답', async () => {
@@ -366,6 +447,11 @@ describe('ProductController (e2e)', () => {
 
         const errorMessage = res.body.message;
         expect(errorMessage).toContain(MarketNotFoundException.ERROR_MESSAGE);
+
+        const findProductCache = await cacheManager.get(productCacheKey);
+        const findProductsCache = await cacheManager.get(productsCacheKey);
+        expect(findProductCache['id']).toEqual(product.id);
+        expect(findProductsCache).toEqual(productsCache);
       });
 
       test('상품 id가 일치하지 않을 경우 404 응답', async () => {
@@ -379,6 +465,11 @@ describe('ProductController (e2e)', () => {
 
         const errorMessage = res.body.message;
         expect(errorMessage).toContain(ProductNotFoundException.ERROR_MESSAGE);
+
+        const findProductCache = await cacheManager.get(productCacheKey);
+        const findProductsCache = await cacheManager.get(productsCacheKey);
+        expect(findProductCache['id']).toEqual(product.id);
+        expect(findProductsCache).toEqual(productsCache);
       });
     });
 
@@ -394,6 +485,11 @@ describe('ProductController (e2e)', () => {
 
         const count = await productRepository.count();
         expect(count).toEqual(0);
+
+        const findProductCache = await cacheManager.get(productCacheKey);
+        const findProductsCache = await cacheManager.get(productsCacheKey);
+        expect(findProductCache).toBeNull();
+        expect(findProductsCache).toBeNull();
       });
     });
   });

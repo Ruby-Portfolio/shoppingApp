@@ -44,9 +44,4 @@ export class ProductCache {
 
     return products;
   }
-
-  async deleteProductDetailCache(productId: number): Promise<void> {
-    const productDetailKey = this.getProductDetailCacheKey(productId);
-    await this.cacheManager.del(productDetailKey);
-  }
 }

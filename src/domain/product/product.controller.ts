@@ -7,6 +7,7 @@ import {
   Post,
   Put,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { JwtGuard } from '../../module/auth/jwt/jwt.guard';
@@ -20,10 +21,14 @@ import {
   ProductsSearch,
 } from './product.dto';
 import { IdPipe } from '../../common/pipe/id.pipe';
+import { ProductCacheInterceptor } from './product.interceptor';
 
 @Controller('products')
+@UseInterceptors(ProductCacheInterceptor)
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
+
+  // interceptor 를 통해 CUD 요청시 목록을 초기화 해야함
 
   @Post()
   @UseGuards(JwtGuard)
@@ -42,6 +47,7 @@ export class ProductController {
   }
 
   @Get()
+  @UseInterceptors(ProductCacheInterceptor)
   async getProducts(
     @Body() productsSearch: ProductsSearch,
   ): Promise<ProductsDto> {

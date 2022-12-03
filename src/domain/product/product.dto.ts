@@ -38,6 +38,7 @@ export class ProductDetailDto {
 }
 
 export class ProductsSearch {
+  @IsOptional()
   keyword: string = '';
 
   @IsInt({ message: ProductErrorMessage.PAGE_POSITIVE })
