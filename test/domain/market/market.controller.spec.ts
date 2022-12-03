@@ -23,6 +23,7 @@ import { MarketErrorMessage } from '../../../src/domain/market/market.message';
 import { MarketNotFoundException } from '../../../src/domain/market/market.exception';
 import * as redisStore from 'cache-manager-ioredis';
 import { Cache } from 'cache-manager';
+import { Product } from '../../../src/domain/product/product.entity';
 
 describe('MarketController (e2e)', () => {
   let app: INestApplication;
@@ -45,7 +46,7 @@ describe('MarketController (e2e)', () => {
           username: process.env.DB_USERNAME,
           password: process.env.DB_PASSWORD,
           database: process.env.DB_DATABASE,
-          entities: [User, Market],
+          entities: [User, Market, Product],
           charset: 'utf8mb4',
           synchronize: true,
           logging: true,

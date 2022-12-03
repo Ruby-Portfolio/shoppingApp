@@ -50,7 +50,7 @@ export class ProductRepository extends Repository<Product> {
 
   async getProductIdsByMarket(marketId: number): Promise<number[]> {
     return this.createQueryBuilder('product')
-      .select(['product.marketId'])
+      .select(['product.id as productId'])
       .where({ marketId })
       .getRawMany();
   }
