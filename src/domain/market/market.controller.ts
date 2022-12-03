@@ -6,6 +6,7 @@ import {
   Post,
   Put,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { MarketService } from './market.service';
 import { MarketDto } from './market.dto';
@@ -13,8 +14,10 @@ import { User } from '../user/user.entity';
 import { CurrentUser } from '../../module/auth/auth.decorator';
 import { JwtGuard } from '../../module/auth/jwt/jwt.guard';
 import { IdPipe } from '../../common/pipe/id.pipe';
+import { MarketCacheInterceptor } from './market.interceptor';
 
 @Controller('markets')
+@UseInterceptors(MarketCacheInterceptor)
 export class MarketController {
   constructor(private readonly marketService: MarketService) {}
 

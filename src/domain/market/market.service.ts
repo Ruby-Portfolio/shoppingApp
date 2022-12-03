@@ -5,13 +5,13 @@ import {
   MarketInsertFailException,
   MarketNotFoundException,
 } from './market.exception';
-import { MarketCache } from './market.cache';
+import { ProductCache } from '../product/product.cache';
 
 @Injectable()
 export class MarketService {
   constructor(
     private readonly marketRepository: MarketRepository,
-    private readonly marketCache: MarketCache,
+    private readonly productCache: ProductCache,
   ) {}
 
   async createMarket(marketDto: MarketDto, userId: number): Promise<void> {
@@ -40,8 +40,7 @@ export class MarketService {
       throw new MarketNotFoundException();
     }
 
-    // TODO : 마켓과 마켓에 속한 상품 캐시데이터를 모두 삭제해야함, market, productDetail*
-    await this.marketCache.deleteMarketCache(marketId, userId);
+    await this.productCache.getDeleteProductsCacheByMarket(marketId);
   }
 
   async deleteMarket(marketId: number, userId: number): Promise<void> {
@@ -56,7 +55,6 @@ export class MarketService {
       throw new MarketNotFoundException();
     }
 
-    // TODO : 마켓과 마켓에 속한 상품 캐시데이터를 모두 삭제해야함
-    await this.marketCache.deleteMarketCache(marketId, userId);
+    await this.productCache.getDeleteProductsCacheByMarket(marketId);
   }
 }
