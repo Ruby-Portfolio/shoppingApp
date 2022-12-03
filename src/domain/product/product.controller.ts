@@ -12,7 +12,13 @@ import { ProductService } from './product.service';
 import { JwtGuard } from '../../module/auth/jwt/jwt.guard';
 import { CurrentUser } from '../../module/auth/auth.decorator';
 import { User } from '../user/user.entity';
-import { ProductDeleteDto, ProductDetailDto, ProductDto } from './product.dto';
+import {
+  ProductDeleteDto,
+  ProductDetailDto,
+  ProductDto,
+  ProductsDto,
+  ProductsSearch,
+} from './product.dto';
 import { IdPipe } from '../../common/pipe/id.pipe';
 
 @Controller('products')
@@ -33,6 +39,13 @@ export class ProductController {
     @Param('productId', IdPipe) productId: number,
   ): Promise<ProductDetailDto> {
     return this.productService.getProductDetail(productId);
+  }
+
+  @Get()
+  async getProducts(
+    @Body() productsSearch: ProductsSearch,
+  ): Promise<ProductsDto> {
+    return this.productService.getProducts(productsSearch);
   }
 
   @Put(':productId')

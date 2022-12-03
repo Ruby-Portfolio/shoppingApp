@@ -1,7 +1,7 @@
 import { Repository } from 'typeorm';
 import { CustomRepository } from '../../module/typeorm/typeorm.decorator';
 import { Product } from './product.entity';
-import { ProductDetailDto } from './product.dto';
+import { ProductDetailDto, ProductsDto, ProductsSearch } from './product.dto';
 import { Market } from '../market/market.entity';
 import { User } from '../user/user.entity';
 
@@ -22,5 +22,29 @@ export class ProductRepository extends Repository<Product> {
       ])
       .where({ id: productId })
       .getRawOne();
+  }
+
+  async getProducts(productsSearch: ProductsSearch): Promise<ProductsDto> {
+    const take = 10;
+    const skip = 10 * productsSearch.page;
+
+    const products = await this.createQueryBuilder('product')
+      .select([
+        'product.id as id',
+        'product.name as name',
+        'product.price as price',
+      ])
+      .where('product.name LIKE :keyword', {
+        keyword: `%${productsSearch.keyword}%`,
+      })
+      .orWhere('product.description LIKE :keyword', {
+        keyword: `%${productsSearch.keyword}%`,
+      })
+      .take(take)
+      .skip(skip)
+      .orderBy('product.id', 'DESC')
+      .getRawMany();
+
+    return { products };
   }
 }

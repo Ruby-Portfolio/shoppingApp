@@ -36,3 +36,19 @@ export class ProductDetailDto {
   marketName: string;
   userName: string;
 }
+
+export class ProductsSearch {
+  keyword: string = '';
+
+  @IsInt({ message: ProductErrorMessage.PAGE_POSITIVE })
+  @Min(0, { message: ProductErrorMessage.PAGE_POSITIVE })
+  page: number = 0;
+}
+
+export class ProductsDto {
+  products: {
+    id: number;
+    name: string;
+    price: number;
+  }[];
+}
