@@ -1,6 +1,8 @@
+import { OrderItemDto } from '../orderItem/orderItem.dto';
+import { IsOrderItem } from '../orderItem/orderItem.validator';
+import { OrderItemErrorMessage } from '../orderItem/orderItem.message';
+
 export class OrderCreateDto {
-  products: {
-    productId: number;
-    count: number;
-  }[];
+  @IsOrderItem({ message: OrderItemErrorMessage.ORDER_ITEM_INVALID })
+  orderItems: OrderItemDto[];
 }
