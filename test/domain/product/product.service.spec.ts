@@ -103,7 +103,6 @@ describe('ProductService', () => {
         const productDto: ProductDto = {
           name: '플루트',
           price: 10000000,
-          stock: 10,
           description: '관악기',
           marketId: marketId,
         };
@@ -122,7 +121,6 @@ describe('ProductService', () => {
         const productDto: ProductDto = {
           name: '플루트',
           price: 10000000,
-          stock: 10,
           description: '관악기',
           marketId: marketId,
         };
@@ -148,7 +146,6 @@ describe('ProductService', () => {
         const productDto: ProductDto = {
           name: '플루트',
           price: 10000000,
-          stock: 10,
           description: '관악기',
           marketId: marketId,
         };

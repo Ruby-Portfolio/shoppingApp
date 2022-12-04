@@ -122,9 +122,9 @@ describe('POrderController (e2e)', () => {
     });
 
     savedProducts = await productRepository.save([
-      { name: '플루트', price: 1000000, stock: 10, marketId: market.id },
-      { name: '바이올린', price: 2000000, stock: 10, marketId: market.id },
-      { name: '클라리넷', price: 1500000, stock: 10, marketId: market.id },
+      { name: '플루트', price: 1000000, marketId: market.id },
+      { name: '바이올린', price: 2000000, marketId: market.id },
+      { name: '클라리넷', price: 1500000, marketId: market.id },
     ]);
 
     token = await jwtService.sign({ ...user } as Payload);

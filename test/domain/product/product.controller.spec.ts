@@ -144,7 +144,6 @@ describe('ProductController (e2e)', () => {
           .send({
             name: '루비',
             price: 10000000,
-            stock: 10,
             description: '보석',
             marketId: market.id,
           })
@@ -160,7 +159,6 @@ describe('ProductController (e2e)', () => {
           .send({
             name: '',
             price: -10,
-            stock: -1,
             description: '보석',
             marketId: 0,
           })
@@ -170,7 +168,6 @@ describe('ProductController (e2e)', () => {
         const errorMessages = res.body.message;
         expect(errorMessages).toContain(ProductErrorMessage.NAME_LENGTH);
         expect(errorMessages).toContain(ProductErrorMessage.PRICE_POSITIVE);
-        expect(errorMessages).toContain(ProductErrorMessage.STOCK_POSITIVE);
         expect(errorMessages).toContain(MarketErrorMessage.ID_POSITIVE);
 
         const cacheData = await cacheManager.get(productsCacheKey);
@@ -183,7 +180,6 @@ describe('ProductController (e2e)', () => {
           .send({
             name: '루비',
             price: 10000000,
-            stock: 10,
             description: '보석',
             marketId: market.id + 999,
           })
@@ -203,7 +199,6 @@ describe('ProductController (e2e)', () => {
         const productCreate = {
           name: '루비',
           price: 10000000,
-          stock: 10,
           description: '보석',
           marketId: market.id,
         };
@@ -217,7 +212,6 @@ describe('ProductController (e2e)', () => {
         const product = (await productRepository.findBy({}))[0];
         expect(product.name).toEqual(productCreate.name);
         expect(product.price).toEqual(productCreate.price);
-        expect(product.stock).toEqual(productCreate.stock);
         expect(product.description).toEqual(productCreate.description);
         expect(product.marketId).toEqual(productCreate.marketId);
 
@@ -236,7 +230,6 @@ describe('ProductController (e2e)', () => {
       product = await productRepository.save({
         name: '루비',
         price: 10000000,
-        stock: 10,
         description: '보석',
         marketId: market.id,
       });
@@ -260,7 +253,6 @@ describe('ProductController (e2e)', () => {
           .send({
             name: '고급 루비',
             price: 100000000,
-            stock: 5,
             description: '고급 보석',
             marketId: market.id,
           })
@@ -278,7 +270,6 @@ describe('ProductController (e2e)', () => {
           .send({
             name: '',
             price: -10,
-            stock: -1,
             description: '고급 보석',
             marketId: -1,
           })
@@ -288,7 +279,6 @@ describe('ProductController (e2e)', () => {
         const errorMessages = res.body.message;
         expect(errorMessages).toContain(ProductErrorMessage.NAME_LENGTH);
         expect(errorMessages).toContain(ProductErrorMessage.PRICE_POSITIVE);
-        expect(errorMessages).toContain(ProductErrorMessage.STOCK_POSITIVE);
         expect(errorMessages).toContain(MarketErrorMessage.ID_POSITIVE);
 
         const findProductCache = await cacheManager.get(productCacheKey);
@@ -303,7 +293,6 @@ describe('ProductController (e2e)', () => {
           .send({
             name: '고급 루비',
             price: 100000000,
-            stock: 5,
             description: '고급 보석',
             marketId: market.id + 999,
           })
@@ -325,7 +314,6 @@ describe('ProductController (e2e)', () => {
           .send({
             name: '고급 루비',
             price: 100000000,
-            stock: 5,
             description: '고급 보석',
             marketId: market.id,
           })
@@ -347,7 +335,6 @@ describe('ProductController (e2e)', () => {
         const productDto = {
           name: '고급 루비',
           price: 100000000,
-          stock: 5,
           description: '고급 보석',
           marketId: market.id,
         };
@@ -365,7 +352,6 @@ describe('ProductController (e2e)', () => {
         expect(updatedProduct.id).toEqual(product.id);
         expect(updatedProduct.name).toEqual(productDto.name);
         expect(updatedProduct.price).toEqual(productDto.price);
-        expect(updatedProduct.stock).toEqual(productDto.stock);
         expect(updatedProduct.description).toEqual(productDto.description);
 
         const findProductCache = await cacheManager.get(productCacheKey);
@@ -385,7 +371,6 @@ describe('ProductController (e2e)', () => {
       product = await productRepository.save({
         name: '루비',
         price: 10000000,
-        stock: 10,
         description: '보석',
         marketId: market.id,
       });
@@ -500,7 +485,6 @@ describe('ProductController (e2e)', () => {
       product = await productRepository.save({
         name: '루비',
         price: 10000000,
-        stock: 10,
         description: '보석',
         marketId: market.id,
       });
@@ -529,7 +513,6 @@ describe('ProductController (e2e)', () => {
         expect(productDetail.id).toEqual(product.id);
         expect(productDetail.name).toEqual(product.name);
         expect(productDetail.price).toEqual(product.price);
-        expect(productDetail.stock).toEqual(product.stock);
         expect(productDetail.description).toEqual(product.description);
         expect(productDetail.marketName).toEqual(market.name);
         expect(productDetail.userName).toEqual(user.name);
@@ -543,7 +526,6 @@ describe('ProductController (e2e)', () => {
         await productRepository.save({
           name: i % 2 === 0 ? '루비' : '다이아',
           price: i % 2 === 0 ? 10000000 : 70000000,
-          stock: 10,
           description: i % 2 === 0 ? '루비보석' : '다이아보석',
           marketId: market.id,
         });

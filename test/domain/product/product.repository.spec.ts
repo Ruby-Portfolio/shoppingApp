@@ -86,7 +86,6 @@ describe('ProductRepository', () => {
       product = await productRepository.save({
         name: '플루트',
         price: 10000000,
-        stock: 10,
         description: '관악기',
         marketId: market.id,
       });
@@ -99,7 +98,6 @@ describe('ProductRepository', () => {
       expect(productDetail.id).toEqual(product.id);
       expect(productDetail.name).toEqual(product.name);
       expect(productDetail.price).toEqual(product.price);
-      expect(productDetail.stock).toEqual(product.stock);
       expect(productDetail.description).toEqual(product.description);
       expect(productDetail.marketName).toEqual(market.name);
       expect(productDetail.userName).toEqual(user.name);

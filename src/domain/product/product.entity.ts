@@ -19,9 +19,6 @@ export class Product {
   @Column()
   price: number;
 
-  @Column()
-  stock: number;
-
   @Column({ nullable: true })
   description: string;
 
