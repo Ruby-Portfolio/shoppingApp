@@ -10,3 +10,11 @@ export class POrderInsertFailException extends HttpException {
 
   public static readonly ERROR_MESSAGE = '주문을 실패하였습니다.';
 }
+
+export class POrderNotFoundException extends HttpException {
+  constructor() {
+    super(POrderNotFoundException.ERROR_MESSAGE, HttpStatus.NOT_FOUND);
+  }
+
+  public static readonly ERROR_MESSAGE = '주문 정보를 찾을 수 없습니다.';
+}

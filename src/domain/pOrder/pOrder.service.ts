@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { POrderRepository } from './pOrder.repository';
 import { OrderCreateDto } from './pOrder.dto';
 import { OrderItemRepository } from '../orderItem/orderItem.repository';
-import { POrderInsertFailException } from './pOrder.exception';
+import {
+  POrderInsertFailException,
+  POrderNotFoundException,
+} from './pOrder.exception';
 import { ProductNotFoundException } from '../product/product.exception';
 import { DataSource, EntityManager } from 'typeorm';
 import { wrapTransaction } from '../../common/transaction';
@@ -49,7 +52,18 @@ export class POrderService {
     );
   }
 
-  async cancelOrder() {}
-
   async getOrdersByUser() {}
+
+  async cancelOrder(orderId: number, userId: number) {
+    const deleteResult = await this.pOrderRepository
+      .softDelete({
+        id: orderId,
+        userId,
+      })
+      .then((updateResult) => !!updateResult.affected);
+
+    if (!deleteResult) {
+      throw new POrderNotFoundException();
+    }
+  }
 }
