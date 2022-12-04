@@ -69,7 +69,7 @@ describe('ProductService', () => {
           .spyOn(marketCache, 'getMarketCache')
           .mockResolvedValue(new Market());
 
-        jest.spyOn(productRepository, 'insert').mockResolvedValue(null);
+        jest.spyOn(productRepository, 'insert').mockRejectedValue(() => {});
 
         await expect(
           productService.createProduct({} as ProductDto, 10),

@@ -21,20 +21,21 @@ export class POrderService {
     await wrapTransaction(
       this.dataSource,
       async (entityManager: EntityManager) => {
-        const order = await entityManager.getRepository(POrder).save({
-          userId,
-        });
-
-        if (!order) {
-          throw new POrderInsertFailException();
-        }
+        const order = await entityManager
+          .getRepository(POrder)
+          .save({
+            userId,
+          })
+          .catch(() => {
+            throw new POrderInsertFailException();
+          });
 
         const orderItems = orderCreateDto.orderItems.map((product) => ({
           ...product,
           pOrder: order,
         }));
 
-        const insertResult = await entityManager
+        await entityManager
           .getRepository(OrderItem)
           .insert(orderItems)
           .then(
@@ -42,12 +43,8 @@ export class POrderService {
               insertResult?.raw?.affectedRows === orderItems.length,
           )
           .catch(() => {
-            return false;
+            throw new ProductNotFoundException();
           });
-
-        if (!insertResult) {
-          throw new ProductNotFoundException();
-        }
       },
     );
   }

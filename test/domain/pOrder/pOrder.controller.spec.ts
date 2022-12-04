@@ -143,6 +143,7 @@ describe('POrderController (e2e)', () => {
       await orderItemRepository.delete({});
       await pOrderRepository.delete({});
     });
+
     describe('요청 실패', () => {
       test('인증되지 않은 사용자의 주문 등록시 401 응답', async () => {
         const orderCreateDto = {

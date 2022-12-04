@@ -33,13 +33,9 @@ export class ProductService {
       throw new MarketNotFoundException();
     }
 
-    const insertResult = await this.productRepository
-      .insert(productDto)
-      .then((insertResult) => !!insertResult?.raw?.affectedRows);
-
-    if (!insertResult) {
+    await this.productRepository.insert(productDto).catch(() => {
       throw new ProductInsertFailException();
-    }
+    });
   }
 
   async getProductDetail(productId: number): Promise<ProductDetailDto> {
