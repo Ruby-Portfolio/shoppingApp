@@ -3,39 +3,52 @@ import { POrderRepository } from './pOrder.repository';
 import { OrderCreateDto } from './pOrder.dto';
 import { OrderItemRepository } from '../orderItem/orderItem.repository';
 import { POrderInsertFailException } from './pOrder.exception';
+import { ProductNotFoundException } from '../product/product.exception';
+import { DataSource, EntityManager } from 'typeorm';
+import { wrapTransaction } from '../../common/transaction';
+import { POrder } from './pOrder.entity';
+import { OrderItem } from '../orderItem/orderItem.entity';
 
 @Injectable()
 export class POrderService {
   constructor(
+    private dataSource: DataSource,
     private readonly pOrderRepository: POrderRepository,
     private readonly orderItemRepository: OrderItemRepository,
   ) {}
 
   async createOrder({ products }: OrderCreateDto, userId: number) {
-    // TODO : insert 가 여러번 발생하므로 transaction 을 적용해야함
+    console.log('==========');
 
-    const order = await this.pOrderRepository.save({
-      userId,
-    });
+    await wrapTransaction(
+      this.dataSource,
+      async (entityManager: EntityManager) => {
+        const order = await entityManager.getRepository(POrder).save({
+          userId,
+        });
 
-    if (!order) {
-      throw new POrderInsertFailException();
-    }
+        if (!order) {
+          throw new POrderInsertFailException();
+        }
 
-    const orderItems = products.map((product) => ({
-      ...product,
-      pOrder: order,
-    }));
+        const orderItems = products.map((product) => ({
+          ...product,
+          pOrder: order,
+        }));
 
-    const insertResult = await this.orderItemRepository
-      .insert(orderItems)
-      .then(
-        (insertResult) => insertResult?.raw?.affectedRows === orderItems.length,
-      );
+        const insertResult = await entityManager
+          .getRepository(OrderItem)
+          .insert(orderItems)
+          .then(
+            (insertResult) =>
+              insertResult?.raw?.affectedRows === orderItems.length,
+          );
 
-    if (!insertResult) {
-      throw new POrderInsertFailException();
-    }
+        if (!insertResult) {
+          throw new ProductNotFoundException();
+        }
+      },
+    );
   }
 
   async cancelOrder() {}
