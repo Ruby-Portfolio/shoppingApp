@@ -15,6 +15,9 @@ export class OrderItem {
   id: number;
 
   @Column()
+  count: number;
+
+  @Column()
   pOrderId: number;
 
   @Column()
