@@ -17,9 +17,7 @@ export class POrderService {
     private readonly orderItemRepository: OrderItemRepository,
   ) {}
 
-  async createOrder({ products }: OrderCreateDto, userId: number) {
-    console.log('==========');
-
+  async createOrder(orderCreateDto: OrderCreateDto, userId: number) {
     await wrapTransaction(
       this.dataSource,
       async (entityManager: EntityManager) => {
@@ -31,7 +29,7 @@ export class POrderService {
           throw new POrderInsertFailException();
         }
 
-        const orderItems = products.map((product) => ({
+        const orderItems = orderCreateDto.orderItems.map((product) => ({
           ...product,
           pOrder: order,
         }));
@@ -42,7 +40,10 @@ export class POrderService {
           .then(
             (insertResult) =>
               insertResult?.raw?.affectedRows === orderItems.length,
-          );
+          )
+          .catch(() => {
+            return false;
+          });
 
         if (!insertResult) {
           throw new ProductNotFoundException();

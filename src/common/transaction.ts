@@ -33,7 +33,7 @@ export const wrapTransaction = async (
     // 오류 발생시 롤백 처리
     await queryRunner.rollbackTransaction();
 
-    throw new SQLException(error);
+    throw error;
   } finally {
     // 커넥션 연결 해제
     await queryRunner.release();
