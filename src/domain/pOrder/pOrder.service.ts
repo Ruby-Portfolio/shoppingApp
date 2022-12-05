@@ -12,6 +12,7 @@ import { wrapTransaction } from '../../common/transaction';
 import { POrder } from './pOrder.entity';
 import { OrderItem } from '../orderItem/orderItem.entity';
 import { POrderState } from './pOrder.enum';
+import { OrderItemNotFoundException } from '../orderItem/orderItem.exception';
 
 @Injectable()
 export class POrderService {
@@ -54,20 +55,37 @@ export class POrderService {
     );
   }
 
-  async getOrdersByUser() {}
+  async getOrdersByUser(userId: number) {
+    // const orders = await this.pOrderRepository
+  }
 
   async cancelOrder(orderId: number, userId: number) {
-    const deleteResult = await this.pOrderRepository
-      .softDelete({
-        id: orderId,
-        userId,
-      })
-      .then((updateResult) => !!updateResult.affected);
+    await wrapTransaction(
+      this.dataSource,
+      async (entityManager: EntityManager) => {
+        const orderDeleteResult = await entityManager
+          .getRepository(POrder)
+          .softDelete({
+            id: orderId,
+            userId,
+          })
+          .then((updateResult) => !!updateResult.affected);
 
-    if (!deleteResult) {
-      throw new POrderNotFoundException();
-    }
+        if (!orderDeleteResult) {
+          throw new POrderNotFoundException();
+        }
 
-    await this.orderItemRepository.softDelete({ pOrderId: orderId });
+        const orderItemsDeleteResult = await entityManager
+          .getRepository(OrderItem)
+          .softDelete({
+            pOrderId: orderId,
+          })
+          .then((updateResult) => !!updateResult.affected);
+
+        if (!orderItemsDeleteResult) {
+          throw new OrderItemNotFoundException();
+        }
+      },
+    );
   }
 }
