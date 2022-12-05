@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { POrderRepository } from './pOrder.repository';
 import { OrderCreateDto } from './pOrder.dto';
-import { OrderItemRepository } from '../orderItem/orderItem.repository';
 import {
   POrderInsertFailException,
   POrderNotFoundException,
@@ -19,7 +18,6 @@ export class POrderService {
   constructor(
     private dataSource: DataSource,
     private readonly pOrderRepository: POrderRepository,
-    private readonly orderItemRepository: OrderItemRepository,
   ) {}
 
   async createOrder(orderCreateDto: OrderCreateDto, userId: number) {
@@ -56,7 +54,7 @@ export class POrderService {
   }
 
   async getOrdersByUser(userId: number) {
-    // const orders = await this.pOrderRepository
+    return this.pOrderRepository.getOrdersByUser(userId);
   }
 
   async cancelOrder(orderId: number, userId: number) {

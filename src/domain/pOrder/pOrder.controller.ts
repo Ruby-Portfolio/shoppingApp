@@ -2,13 +2,14 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   Param,
   Post,
   UseGuards,
 } from '@nestjs/common';
 import { POrderService } from './pOrder.service';
 import { JwtGuard } from '../../module/auth/jwt/jwt.guard';
-import { OrderCreateDto } from './pOrder.dto';
+import { OrderCreateDto, OrdersDto } from './pOrder.dto';
 import { CurrentUser } from '../../module/auth/auth.decorator';
 import { User } from '../user/user.entity';
 import { IdPipe } from '../../common/pipe/id.pipe';
@@ -24,6 +25,12 @@ export class POrderController {
     @CurrentUser() user: User,
   ): Promise<void> {
     await this.pOrderService.createOrder(orderCreateDto, user.id);
+  }
+
+  @Get()
+  @UseGuards(JwtGuard)
+  async getOrdersByUser(@CurrentUser() user: User): Promise<OrdersDto> {
+    return this.pOrderService.getOrdersByUser(user.id);
   }
 
   @Delete(':orderId')

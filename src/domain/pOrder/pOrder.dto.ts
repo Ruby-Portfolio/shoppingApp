@@ -6,3 +6,10 @@ export class OrderCreateDto {
   @IsOrderItem({ message: OrderItemErrorMessage.ORDER_ITEM_INVALID })
   orderItems: OrderItemDto[];
 }
+
+export class OrdersDto {
+  orders: {
+    orderId: number;
+    totalPrice: bigint;
+  }[];
+}
