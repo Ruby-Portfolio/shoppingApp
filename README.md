@@ -1,3 +1,12 @@
+## 목차
+
+[개요](#개요)<br>
+[사용기술](#사용-기술)<br>
+[패키지](#패키지)<br>
+[요구사항](#요구사항)<br>
+[API](#api)<br>
+[테스트](#테스트)<br>
+
 ## 개요
 - 쇼핑몰 서비스 구현
 
@@ -140,6 +149,9 @@
 |--------|---------------------|----------------|-------------|
 | DELETE | /api/orders/orderId | orderId: 상품 ID | status: 200 |
 
-### 테스트
+## 테스트
+- [마켓 테스트](https://github.com/Ruby-Toys/shoppingApp/tree/develop/test/domain/market)
+- [상품 테스트](https://github.com/Ruby-Toys/shoppingApp/tree/develop/test/domain/product)
+- [주문 테스트](https://github.com/Ruby-Toys/shoppingApp/tree/develop/test/domain/pOrder)
 - 전체 테스트 결과<br>
 ![img.png](img/test.png)
