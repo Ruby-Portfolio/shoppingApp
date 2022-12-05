@@ -293,4 +293,56 @@ describe('POrderController (e2e)', () => {
       });
     });
   });
+
+  describe('유저의 주문 목록 조회', () => {
+    let order: POrder;
+    let orderItems: OrderItem[];
+    beforeAll(async () => {
+      order = await pOrderRepository.save({
+        userId: user.id,
+        orderState: POrderState.PAYMENT_WAITING,
+      });
+      orderItems = await orderItemRepository.save([
+        {
+          pOrderId: order.id,
+          productId: savedProducts[0].id,
+          count: 3,
+        },
+        {
+          pOrderId: order.id,
+          productId: savedProducts[1].id,
+          count: 5,
+        },
+      ]);
+    });
+
+    afterAll(async () => {
+      await orderItemRepository.delete({});
+      await pOrderRepository.delete({});
+    });
+
+    describe('요청 실패', () => {
+      test('인증되지 않은 사용자의 주문 목록 조회시 401 응답', async () => {
+        await request(app.getHttpServer())
+          .get('/api/orders')
+          .expect(HttpStatus.UNAUTHORIZED);
+      });
+    });
+    describe('요청 성공', () => {
+      test('주문 목록 조회 성공시 201 응답', async () => {
+        const res = await request(app.getHttpServer())
+          .get('/api/orders')
+          .set('Cookie', [`Authentication=${token}`])
+          .expect(HttpStatus.OK);
+
+        const { orders } = res.body;
+        const totalPrice =
+          orderItems[0].count * savedProducts[0].price +
+          orderItems[1].count * savedProducts[1].price;
+
+        expect(orders[0].orderId).toEqual(order.id);
+        expect(orders[0].totalPrice).toEqual(totalPrice);
+      });
+    });
+  });
 });
