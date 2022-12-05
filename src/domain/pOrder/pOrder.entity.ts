@@ -7,6 +7,7 @@ import {
 } from 'typeorm';
 import { DateColumns } from '../embedded/dateColumns';
 import { User } from '../user/user.entity';
+import { POrderState } from './pOrder.enum';
 
 @Entity()
 export class POrder {
@@ -15,6 +16,9 @@ export class POrder {
 
   @Column()
   userId: number;
+
+  @Column({ type: 'enum', name: 'orderState', enum: POrderState })
+  orderState: POrderState;
 
   @Column(() => DateColumns, { prefix: false })
   dateColumns: DateColumns;

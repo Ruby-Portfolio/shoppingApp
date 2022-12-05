@@ -11,6 +11,7 @@ import { DataSource, EntityManager } from 'typeorm';
 import { wrapTransaction } from '../../common/transaction';
 import { POrder } from './pOrder.entity';
 import { OrderItem } from '../orderItem/orderItem.entity';
+import { POrderState } from './pOrder.enum';
 
 @Injectable()
 export class POrderService {
@@ -27,6 +28,7 @@ export class POrderService {
         const order = await entityManager
           .getRepository(POrder)
           .save({
+            orderState: POrderState.PAYMENT_WAITING,
             userId,
           })
           .catch(() => {
@@ -65,5 +67,7 @@ export class POrderService {
     if (!deleteResult) {
       throw new POrderNotFoundException();
     }
+
+    await this.orderItemRepository.softDelete({ pOrderId: orderId });
   }
 }
