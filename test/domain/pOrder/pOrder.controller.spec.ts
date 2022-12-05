@@ -29,6 +29,8 @@ import { POrder } from '../../../src/domain/pOrder/pOrder.entity';
 import { OrderItem } from '../../../src/domain/orderItem/orderItem.entity';
 import { OrderItemErrorMessage } from '../../../src/domain/orderItem/orderItem.message';
 import { ProductNotFoundException } from '../../../src/domain/product/product.exception';
+import { POrderState } from '../../../src/domain/pOrder/pOrder.enum';
+import { POrderNotFoundException } from '../../../src/domain/pOrder/pOrder.exception';
 
 describe('POrderController (e2e)', () => {
   let app: INestApplication;
@@ -228,6 +230,66 @@ describe('POrderController (e2e)', () => {
         expect(orderItems[0].count).toEqual(1);
         expect(orderItems[1].count).toEqual(2);
         expect(orderItems[2].count).toEqual(3);
+      });
+    });
+  });
+
+  describe('주문 취소', () => {
+    let order: POrder;
+    beforeAll(async () => {
+      order = await pOrderRepository.save({
+        userId: user.id,
+        orderState: POrderState.PAYMENT_WAITING,
+      });
+      await orderItemRepository.save([
+        {
+          pOrderId: order.id,
+          productId: savedProducts[0].id,
+          count: 3,
+        },
+        {
+          pOrderId: order.id,
+          productId: savedProducts[1].id,
+          count: 5,
+        },
+      ]);
+    });
+
+    afterAll(async () => {
+      await orderItemRepository.delete({});
+      await pOrderRepository.delete({});
+    });
+
+    describe('요청 실패', () => {
+      test('인증되지 않은 사용자의 주문 취소시 401 응답', async () => {
+        await request(app.getHttpServer())
+          .delete(`/api/orders/${order.id}`)
+          .expect(HttpStatus.UNAUTHORIZED);
+      });
+
+      test('존재하지 않는 주문 취소시 404 응답', async () => {
+        const res = await request(app.getHttpServer())
+          .delete(`/api/orders/${order.id + 999}`)
+          .set('Cookie', [`Authentication=${token}`])
+          .expect(HttpStatus.NOT_FOUND);
+
+        const errorMessage = res.body.message;
+        expect(errorMessage).toEqual(POrderNotFoundException.ERROR_MESSAGE);
+      });
+    });
+
+    describe('요청 성공', () => {
+      test('주문 취소 성공시 201 응답', async () => {
+        await request(app.getHttpServer())
+          .delete(`/api/orders/${order.id}`)
+          .set('Cookie', [`Authentication=${token}`])
+          .expect(HttpStatus.OK);
+
+        const orderCount = await pOrderRepository.count();
+        const orderItemCount = await orderItemRepository.count();
+
+        expect(orderCount).toEqual(0);
+        expect(orderItemCount).toEqual(0);
       });
     });
   });
