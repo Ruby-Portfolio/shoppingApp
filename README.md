@@ -62,3 +62,80 @@
 
 ## ER Diagram
 ![img.png](img/er-diagram.png)
+
+## API
+### 사용자
+- 사용자 인증
+
+| Method | URL          | Response        |
+|--------|:-------------|:----------------|
+| GET    | /auth/google | 사용자 가입 / 로그인 |
+
+### 마켓
+- 마켓 생성
+
+| Method | URL          | Request Body | Response          |
+|--------|--------------|--------------|-------------------|
+| POST   | /api/markets | {<br>&nbsp;&nbsp;name: 마켓명<br>&nbsp;&nbsp;description: 마켓 설명<br>} | status: 201|
+
+- 마켓 정보 수정
+
+| Method | URL                   | Request Path     | Request Body                                                  | Response    |
+|--------|-----------------------|------------------|---------------------------------------------------------------|-------------|
+| PUT    | /api/markets/marketId | marketId: 마켓 ID  | {<br>&nbsp;&nbsp;name: 마켓명<br>&nbsp;&nbsp;description: 마켓 설명<br>} | status: 200 |
+
+- 마켓 정보 삭제
+
+| Method | URL                   | Request Path    | Response    |
+|--------|-----------------------|-----------------|-------------|
+| DELETE | /api/markets/marketId | marketId: 마켓 ID | status: 200 |
+
+### 상품
+- 상품 등록
+
+| Method | URL           | Request Body                                                                                                | Response    |
+|--------|---------------|-------------------------------------------------------------------------------------------------------------|-------------|
+| POST   | /api/products | {<br>&nbsp;&nbsp;name: 상품명<br>&nbsp;&nbsp;price: 상품 가격<br>&nbsp;&nbsp;상품 설명<br>&nbsp;&nbsp;marketId: 마켓 ID<br>} | status: 201 |
+
+- 상품 목록 조회
+
+| Method | URL           | Request Param | Response                                                                                                          |
+|--------|---------------|---------------|-------------------------------------------------------------------------------------------------------------------|
+|GET |/api/products |{<br>&nbsp;&nbsp;keyword: 검색어<br>&nbsp;&nbsp;page: 페이지 번호} | status: 200<br>products : {<br>&nbsp;&nbsp;id: 상품 ID<br>&nbsp;&nbsp;name: 상품명<br>&nbsp;&nbsp;price: 상품 가격<br>} [] |
+
+- 상품 상세 조회
+
+| Method | URL                     | Request Path     | Response                                                                                                                                                                                          |
+|--------|-------------------------|------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| GET    | /api/products/productId | productId: 상품 ID | status: 200<br>{<br>&nbsp;&nbsp;id: 상품 ID<br>&nbsp;&nbsp;name: 상품명<br>&nbsp;&nbsp;price: 상품 가격<br>&nbsp;&nbsp;description: 상품 설명<br>&nbsp;&nbsp;marketName: 마켓명<br>&nbsp;&nbsp;username: 마켓 사업자명<br>} |
+
+- 상품 정보 수정
+
+| Method | URL                     | Request Path     | Request Body                                                                                                             | Response    |
+|--------|-------------------------|------------------|--------------------------------------------------------------------------------------------------------------------------|-------------|
+| PUT    | /api/products/productId | productId: 상품 ID | {<br>&nbsp;&nbsp;name: 상품명<br>&nbsp;&nbsp;price: 상품 가격<br>&nbsp;&nbsp;description: 상품 설명<br>&nbsp;&nbsp;marketId: 마켓 ID<br>} | status: 200 |
+
+- 상품 정보 삭제
+
+| Method | URL                     | Request Path     | Request Body    | Response    |
+|--------|-------------------------|------------------|-----------------|-------------|
+| DELETE | /api/products/productId | productId: 상품 ID | marketId: 마켓 ID | status: 200 |
+
+### 주문
+- 주문 등록
+
+| Method | URL         | Request Body                                                                      | Response    |
+|--------|-------------|-----------------------------------------------------------------------------------|-------------|
+| POST   | /api/orders | orderItems: {<br>&nbsp;&nbsp;productId: 상품 ID<br>&nbsp;&nbsp;count: 주문 개수<br>} [] | status: 201 |
+
+- 주문 조회
+
+| Method | URL         | Response                                                                                          |
+|--------|-------------|---------------------------------------------------------------------------------------------------|
+| GET    | /api/orders | status: 200<br>orders: {<br>&nbsp;&nbsp;orderId: 주문 ID<br>&nbsp;&nbsp;totalPrice: 주문 총 금액<br>} [] |
+
+- 주문 취소
+
+| Method | URL                 | Request Path   | Response    |
+|--------|---------------------|----------------|-------------|
+| DELETE | /api/orders/orderId | orderId: 상품 ID | status: 200 |
