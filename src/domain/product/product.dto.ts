@@ -11,10 +11,6 @@ export class ProductDto {
   @Min(1, { message: ProductErrorMessage.PRICE_POSITIVE })
   price: number;
 
-  @IsInt({ message: ProductErrorMessage.STOCK_POSITIVE })
-  @Min(0, { message: ProductErrorMessage.STOCK_POSITIVE })
-  stock: number;
-
   @IsOptional()
   description?: string;
 
@@ -31,7 +27,6 @@ export class ProductDetailDto {
   id: number;
   name: string;
   price: number;
-  stock: number;
   description?: string;
   marketName: string;
   userName: string;

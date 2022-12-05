@@ -15,7 +15,6 @@ export class ProductRepository extends Repository<Product> {
         'product.id as id',
         'product.name as name',
         'product.price as price',
-        'product.stock as stock',
         'product.description as description',
         'market.name as marketName',
         'user.name as userName',

@@ -9,6 +9,9 @@ import { Market } from './domain/market/market.entity';
 import { Product } from './domain/product/product.entity';
 import * as redisStore from 'cache-manager-ioredis';
 import { ProductModule } from './domain/product/product.module';
+import { POrder } from './domain/pOrder/pOrder.entity';
+import { OrderItem } from './domain/orderItem/orderItem.entity';
+import { POrderModule } from './domain/pOrder/pOrder.module';
 
 @Module({
   imports: [
@@ -22,7 +25,7 @@ import { ProductModule } from './domain/product/product.module';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
-      entities: [User, Market, Product],
+      entities: [User, Market, Product, POrder, OrderItem],
       charset: 'utf8mb4',
       synchronize: true,
       logging: true,
@@ -37,6 +40,7 @@ import { ProductModule } from './domain/product/product.module';
     AuthModule,
     MarketModule,
     ProductModule,
+    POrderModule,
   ],
   controllers: [],
   providers: [],

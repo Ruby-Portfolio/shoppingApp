@@ -15,16 +15,14 @@ export class MarketService {
   ) {}
 
   async createMarket(marketDto: MarketDto, userId: number): Promise<void> {
-    const insertResult = await this.marketRepository
+    await this.marketRepository
       .insert({
         ...marketDto,
         userId,
       })
-      .then((insertResult) => !!insertResult.raw.affectedRows);
-
-    if (!insertResult) {
-      throw new MarketInsertFailException();
-    }
+      .catch(() => {
+        throw new MarketInsertFailException();
+      });
   }
 
   async updateMarket(

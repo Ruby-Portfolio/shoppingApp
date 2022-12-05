@@ -6,29 +6,24 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { DateColumns } from '../embedded/dateColumns';
-import { Market } from '../market/market.entity';
+import { User } from '../user/user.entity';
+import { POrderState } from './pOrder.enum';
 
 @Entity()
-export class Product {
+export class POrder {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
-  name: string;
+  userId: number;
 
-  @Column()
-  price: number;
-
-  @Column({ nullable: true })
-  description: string;
-
-  @Column()
-  marketId: number;
+  @Column({ type: 'enum', name: 'orderState', enum: POrderState })
+  orderState: POrderState;
 
   @Column(() => DateColumns, { prefix: false })
   dateColumns: DateColumns;
 
-  @ManyToOne(() => Market)
-  @JoinColumn({ name: 'marketId' })
-  market: Market;
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'userId' })
+  user: User;
 }

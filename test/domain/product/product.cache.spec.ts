@@ -115,7 +115,6 @@ describe('ProductCache', () => {
         expect(productDetail.id).toEqual(cacheProduct.id);
         expect(productDetail.name).toEqual(cacheProduct.name);
         expect(productDetail.price).toEqual(cacheProduct.price);
-        expect(productDetail.stock).toEqual(cacheProduct.stock);
         expect(productDetail.description).toEqual(cacheProduct.description);
         expect(productDetail.marketName).toEqual(cacheProduct.marketName);
         expect(productDetail.userName).toEqual(cacheProduct.userName);
@@ -145,7 +144,6 @@ describe('ProductCache', () => {
         expect(productDetail.id).toEqual(product.id);
         expect(productDetail.name).toEqual(product.name);
         expect(productDetail.price).toEqual(product.price);
-        expect(productDetail.stock).toEqual(product.stock);
         expect(productDetail.description).toEqual(product.description);
         expect(productDetail.marketName).toEqual(market.name);
         expect(productDetail.userName).toEqual(user.name);
