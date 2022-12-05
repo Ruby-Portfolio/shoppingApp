@@ -139,3 +139,7 @@
 | Method | URL                 | Request Path   | Response    |
 |--------|---------------------|----------------|-------------|
 | DELETE | /api/orders/orderId | orderId: 상품 ID | status: 200 |
+
+### 테스트
+- 전체 테스트 결과<br>
+![img.png](img/test.png)
